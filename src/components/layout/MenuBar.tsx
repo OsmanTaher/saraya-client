@@ -9,11 +9,11 @@ interface MenuBarProps {
 }
 
 const categories = [
-  "أقلام و أدوات مكتبية",
-  "كشاكيل و كراسات",
-  "أدوات الرسم",
-  "لانشبوك و زمزمية",
-  "مقالم و شنط",
+  "مشويات",
+  "سندوتشات",
+  "وجبات",
+  "مقبلات وسلطات",
+  "مشروبات",
 ];
 
 export default function MenuBar({ isOpen, onClose }: MenuBarProps) {
@@ -65,7 +65,7 @@ export default function MenuBar({ isOpen, onClose }: MenuBarProps) {
               onClick={() => handleCategorySelect(null)}
               className={`w-full text-right px-4 py-2.5 rounded-xl text-sm transition ${
                 !currentCategory
-                  ? "bg-indigo-50 text-indigo-600 font-bold"
+                  ? "bg-orange-50 text-[#D55304] font-bold"
                   : "text-slate-700 hover:bg-slate-50"
               }`}
             >
@@ -80,7 +80,7 @@ export default function MenuBar({ isOpen, onClose }: MenuBarProps) {
                 onClick={() => handleCategorySelect(cat)}
                 className={`w-full text-right px-4 py-2.5 rounded-xl text-sm transition ${
                   currentCategory === cat
-                    ? "bg-indigo-50 text-indigo-600 font-bold"
+                    ? "bg-orange-50 text-[#D55304] font-bold"
                     : "text-slate-700 hover:bg-slate-50"
                 }`}
               >

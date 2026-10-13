@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #5A4FCF;
+  --color-primary: #D55304;
+  --color-primary-hover: #b84403;
   --color-secondary: #FFC107;
   --color-dark: #1E1E2D;
   --color-lightBg: #F3F4F6;
@@ -25,7 +26,7 @@
     max-width: 1280px;
   }
   @media (width >= 96rem) {
-    max-width: 1400px; /* تعديل الشاشات الكبيرة مثلاً */
+    max-width: 1400px;
   }
 }
 

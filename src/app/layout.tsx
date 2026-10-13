@@ -30,20 +30,17 @@ const tajawal = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "بيعلي جملة",
-  description: "طلب الأدوات المدرسية بسهولة بسعر الجملة",
-  keywords: ["بيعلي جملة", "توشكى بالجملة", "أدوات مدرسية جملة", "مكتبة توشكى"],
-  metadataBase: new URL("https://toshka-wholesale.vercel.app"),
+  title: "مطعم السرايا | أشهى المأكولات والمشويات",
+  description: "مطعم السرايا - أشهى المأكولات والمشويات الطازجة. اطلب وجبتك المفضلة بسهولة",
+  keywords: ["مطعم السرايا", "مشويات", "وجبات", "سندوتشات", "مأكولات", "توصيل طعام"],
+  metadataBase: new URL("https://saraya-restaurant.vercel.app"),
   alternates: {
     canonical: "/",
   },
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
+    icon: "/logo.png",
+    shortcut: "/logo.png",
   },
-  verification: {
-    google: "ROs8hDISKSQqGbLcIRkf2E-pjlYksnQd9faZ70DvAV0",
-  }
 };
 
 export default function RootLayout({

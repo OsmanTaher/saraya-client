@@ -61,7 +61,7 @@ export default function Header() {
 
   return (
     <header
-      className="bg-[#5850EC] text-white sticky top-0 z-40 shadow-md"
+      className="bg-[#D55304] text-white sticky top-0 z-40 shadow-md"
       dir="rtl"
     >
       <div className="container mx-auto px-4 py-2 flex items-center justify-between">
@@ -71,8 +71,8 @@ export default function Header() {
             onClick={handleLogoClick}
           >
             <Image
-              src="/icon.png"
-              alt="شعار متجر بيعلي جملة"
+              src="/logo.png"
+              alt="شعار مطعم السرايا"
               width={40}
               height={40}
               priority
@@ -82,10 +82,10 @@ export default function Header() {
 
           <div className="text-right">
             <h1 className="text-lg md:text-xl font-bold leading-tight">
-              متجر بيعلي جملة
+              مطعم السرايا
             </h1>
             <p className="text-xs text-white/80 font-normal">
-              طلب الأدوات المدرسية بسهولة
+              أشهى المأكولات والمشويات
             </p>
           </div>
         </div>
