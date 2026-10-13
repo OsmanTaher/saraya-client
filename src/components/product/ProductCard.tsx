@@ -1,66 +1,65 @@
 "use client";
 
 import { useState } from "react";
-import { useCart } from "@/src/context/CartContext";
+import { useCart, getCartItemKey } from "@/src/context/CartContext";
 import { Product } from "@/src/types";
 import ProductImageBadge from "./ProductImageBadge";
 import ProductInfo from "./ProductInfo";
 import ProductQuantityControl from "./ProductQuantityControl";
-import  ImageModal  from "./ImageModal";
-import ProductMaxAlert from "./ProductMaxAlert";
-
-
-
+import ImageModal from "./ImageModal";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { cart, addToCart, updateQuantity } = useCart();
-  const [alertTrigger, setAlertTrigger] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
-  const cartItem = cart.find((item) => item._id === product._id);
+  const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
+  const [selectedSize, setSelectedSize] = useState<string>(
+    hasSizes ? product.sizes![0].name : ""
+  );
+
+  // تحديد سعر الوجبة بناءً على الحجم المختار حالياً
+  const activePrice = hasSizes
+    ? product.sizes!.find((s) => s.name === selectedSize)?.price ?? product.price
+    : product.price;
+
+  const oldPrice = product.oldPrice ? Number(product.oldPrice) : undefined;
+
+  // البحث عن الكمية المضافة في السلة لهذا المنتج بهذا الحجم تحديداً
+  const itemKey = getCartItemKey(product._id, selectedSize);
+  const cartItem = cart.find(
+    (item) =>
+      (item.cartItemId || getCartItemKey(item._id, item.selectedSize)) === itemKey
+  );
   const currentQty = cartItem ? cartItem.cartQuantity : 0;
-  const oldPrice = Number(product.oldPrice);
 
   const handleIncrease = () => {
-    if (product.maxQty && currentQty >= product.maxQty) {
-      setAlertTrigger((prev) => prev + 1);
-      return;
-    }
-
     if (currentQty === 0) {
-      addToCart(product, 1);
+      addToCart(product, 1, selectedSize, activePrice);
     } else {
-      updateQuantity(product._id, currentQty + 1);
+      updateQuantity(product._id, currentQty + 1, selectedSize);
     }
   };
 
   const handleDecrease = () => {
     if (currentQty > 0) {
-      updateQuantity(product._id, currentQty - 1);
+      updateQuantity(product._id, currentQty - 1, selectedSize);
     }
-  };
-
-  const handleOpenZoom = () => {
-    setIsZoomed(true);
-  };
-
-  const handleCloseZoom = () => {
-    setIsZoomed(false);
   };
 
   return (
     <>
       <div
         id={`product-${product._id}`}
-        className="product-card bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm flex flex-col justify-between transition-all hover:shadow-md"
+        className="product-card bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs flex flex-col justify-between transition-all duration-200 hover:shadow-md"
       >
         <div>
           <ProductImageBadge
             image={product.image}
             name={product.name}
-            price={product.price}
+            // category={product.category}
+            price={activePrice}
             oldPrice={oldPrice}
-            onZoom={handleOpenZoom}
+            onZoom={() => setIsZoomed(true)}
           />
 
           <ProductInfo
@@ -72,22 +71,20 @@ export default function ProductCard({ product }: { product: Product }) {
 
         <ProductQuantityControl
           currentQty={currentQty}
-          maxQty={product.maxQty}
+          sizes={product.sizes}
+          selectedSize={selectedSize}
+          onSizeChange={setSelectedSize}
           onIncrease={handleIncrease}
           onDecrease={handleDecrease}
         />
       </div>
-      
-      {alertTrigger > 0 && (
-        <ProductMaxAlert trigger={alertTrigger} maxQty={product.maxQty} />
-      )}
 
       {isZoomed && (
         <ImageModal
           isOpen={isZoomed}
           imageSrc={product.image}
           imageAlt={product.name}
-          onClose={handleCloseZoom}
+          onClose={() => setIsZoomed(false)}
         />
       )}
     </>

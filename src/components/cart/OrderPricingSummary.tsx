@@ -1,50 +1,57 @@
 "use client";
 
-import { TricycleIcon } from "../icons/TricycleIcon";
+import { Truck } from "lucide-react";
 
 interface OrderPricingSummaryProps {
-  totalPrice: number;
-  deliveryFee: number;
-  isPickup: boolean;
-  finalTotal: number;
+  totalPrice?: number;
+  deliveryFee?: number;
+  isPickup?: boolean;
+  isDineIn?: boolean;
+  finalTotal?: number;
 }
 
 export default function OrderPricingSummary({
-  totalPrice,
-  deliveryFee,
-  isPickup,
-  finalTotal,
+  totalPrice = 0,
+  deliveryFee = 15,
+  isPickup = false,
+  isDineIn = false,
+  finalTotal = 0,
 }: OrderPricingSummaryProps) {
+  const safeTotal = Number(totalPrice || 0);
+  const safeDelivery = isPickup || isDineIn ? 0 : Number(deliveryFee || 0);
+  const safeFinal =
+    finalTotal !== undefined ? Number(finalTotal) : safeTotal + safeDelivery;
+
   return (
-    <div className="bg-slate-50 p-4 rounded-xl space-y-3 text-sm border border-slate-100">
-      <div className="flex justify-between text-slate-600">
-        <span>مجموع المنتجات:</span>
-        <span className="font-bold text-slate-800">
-          {totalPrice.toFixed(2)} ج
+    <div
+      className="bg-slate-50/80 p-4 rounded-2xl space-y-2.5 text-sm border border-slate-100"
+      dir="rtl"
+    >
+      <div className="flex justify-between items-center text-slate-600 text-xs sm:text-sm">
+        <span className="font-medium">مجموع الوجبات:</span>
+        <span className="font-extrabold text-slate-800">
+          {safeTotal.toFixed(2)} ج.م
         </span>
       </div>
 
-      <div
-        className={`flex justify-between text-slate-600 transition-all duration-300 ease-in-out overflow-hidden ${
-          isPickup
-            ? "max-h-0 opacity-0 pointer-events-none"
-            : "max-h-20 opacity-100"
-        }`}
-      >
-        <span className="flex items-center gap-1.5">
-          <TricycleIcon size={18} className="text-slate-700 shrink-0 inline" />
-          رسوم التوصيل:
-        </span>
-        <div className="flex items-center gap-1.5 text-sm">
-          <span className="font-bold text-slate-800">{deliveryFee} ج.م</span>
-          <span className="text-xs text-slate-400 line-through">15 ج.م</span>
+      {!isPickup && !isDineIn && (
+        <div className="flex justify-between items-center text-slate-600 text-xs sm:text-sm">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Truck className="w-4 h-4 text-slate-500 shrink-0" />
+            <span>رسوم التوصيل:</span>
+          </span>
+          <span className="font-extrabold text-slate-800">
+            {safeDelivery.toFixed(2)} ج.م
+          </span>
         </div>
-      </div>
+      )}
 
-      <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-slate-900">
-        <span className="font-bold text-base">الإجمالي النهائي:</span>
-        <span className="text-xl font-extrabold text-indigo-600">
-          {finalTotal.toFixed(2)} ج
+      <div className="border-t border-slate-200/80 pt-2.5 flex justify-between items-center text-slate-900">
+        <span className="font-extrabold text-sm sm:text-base">
+          الإجمالي النهائي:
+        </span>
+        <span className="text-lg sm:text-xl font-extrabold text-[#D55304]">
+          {safeFinal.toFixed(2)} ج.م
         </span>
       </div>
     </div>

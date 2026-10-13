@@ -38,18 +38,22 @@ export default function QuickServicesBar() {
       const res = await fetch(`${apiUrl}/orders/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber, orderNumber }),
+        body: JSON.stringify({
+          phone: phoneNumber.trim(),
+          phoneNumber: phoneNumber.trim(),
+          orderNumber: orderNumber.trim(),
+        }),
       });
       const data = await res.json();
 
       if (!res.ok) {
         setErrorMsg(
-          data.message || "البيانات غير صحيحة، يرجى التأكد والمحاولة مجدداً.",
+          data.message || "البيانات غير صحيحة، يرجى التأكد والمحاولة مجدداً."
         );
         return;
       }
 
-      setViewingOrder(data.order);
+      setViewingOrder(data.order || data);
       setActiveAccordion("none");
     } catch {
       setErrorMsg("تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً.");
@@ -68,7 +72,11 @@ export default function QuickServicesBar() {
       const res = await fetch(`${apiUrl}/orders/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber, orderNumber }),
+        body: JSON.stringify({
+          phone: phoneNumber.trim(),
+          phoneNumber: phoneNumber.trim(),
+          orderNumber: orderNumber.trim(),
+        }),
       });
       const data = await res.json();
 
@@ -93,7 +101,7 @@ export default function QuickServicesBar() {
       <div className="bg-white border border-slate-200/70 rounded-3xl p-6 md:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all">
         <div className="flex items-center gap-2 mb-4">
           <svg
-            className="w-5 h-5 text-indigo-600"
+            className="w-5 h-5 text-[#D55304]"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -110,14 +118,14 @@ export default function QuickServicesBar() {
           <h2 className="font-bold text-slate-900">خدمات سريعة</h2>
         </div>
 
-        <div className=" grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <button
             type="button"
             onClick={() => setIsAboutOpen(true)}
-            className="w-full h-14 bg-[#FFF9E6] hover:bg-[#FFF3CD] text-[#854D0E] rounded-2xl px-5 flex items-center justify-start gap-2 font-bold text-sm transition-all duration-200 cursor-pointer shadow-xs active:scale-[0.99]"
+            className="w-full h-14 bg-[#FFF7ED] hover:bg-[#FFEDD5] text-[#9A3412] rounded-2xl px-5 flex items-center justify-start gap-2 font-bold text-sm transition-all duration-200 cursor-pointer shadow-xs active:scale-[0.99]"
           >
             <svg
-              className="w-5 h-5 text-[#A16207]"
+              className="w-5 h-5 text-[#D55304]"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -127,7 +135,7 @@ export default function QuickServicesBar() {
                 clipRule="evenodd"
               />
             </svg>
-            <span>اقرأ عنا</span>
+            <span>عن مطعم السرايا</span>
           </button>
 
           <button
@@ -147,10 +155,12 @@ export default function QuickServicesBar() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>شوف طلبك</span>
+              <span>تتبع طلبك</span>
             </div>
             <svg
-              className={`w-4 h-4 text-[#047857] transition-transform duration-300 ${activeAccordion === "track" ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-[#047857] transition-transform duration-300 ${
+                activeAccordion === "track" ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2.5"
@@ -183,7 +193,9 @@ export default function QuickServicesBar() {
               <span>إلغاء الطلب</span>
             </div>
             <svg
-              className={`w-4 h-4 text-[#BE123C] transition-transform duration-300 ${activeAccordion === "cancel" ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-[#BE123C] transition-transform duration-300 ${
+                activeAccordion === "cancel" ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2.5"
@@ -206,7 +218,7 @@ export default function QuickServicesBar() {
                   <span>تفاصيل طلبك</span>
                 </span>
                 <span className="text-xs text-emerald-600 font-bold">
-                  استعلام مباشر عن حالة وسلع الطلب
+                  استعلام مباشر عن حالة ووجبات الطلب
                 </span>
               </div>
 
@@ -219,11 +231,10 @@ export default function QuickServicesBar() {
               <form onSubmit={handleTrackSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5 text-right">
-                    رقم الهاتف
+                    رقم الهاتف (اختياري في حال إدخال رقم الطلب)
                   </label>
                   <input
                     type="tel"
-                    required
                     placeholder="01xxxxxxxxx"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
@@ -238,7 +249,7 @@ export default function QuickServicesBar() {
                   <input
                     type="text"
                     required
-                    placeholder="1234"
+                    placeholder="1001"
                     value={orderNumber}
                     onChange={(e) => setOrderNumber(e.target.value)}
                     className="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-right text-slate-800 placeholder:text-slate-300 transition"
@@ -264,8 +275,8 @@ export default function QuickServicesBar() {
                 <span className="flex items-center gap-1.5">
                   <span>إلغاء الطلب</span>
                 </span>
-                <span className="text-xs  text-rose-500 font-bold">
-                  متاح للطلبات قيد الانتظار فقط
+                <span className="text-xs text-rose-500 font-bold">
+                  متاح قبل بدء تحضير الوجبة في المطبخ فقط
                 </span>
               </div>
 
@@ -284,29 +295,15 @@ export default function QuickServicesBar() {
               <form onSubmit={handleCancelSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5 text-right">
-                    رقم الهاتف
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="01xxxxxxxxx"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full px-4 py-3 text-sm bg-white border border-rose-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-right text-slate-800 placeholder:text-slate-300 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 text-right">
                     رقم الطلب
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="1234"
+                    placeholder="1001"
                     value={orderNumber}
                     onChange={(e) => setOrderNumber(e.target.value)}
-                    className="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-right text-slate-800 placeholder:text-slate-300 transition"
+                    className="w-full px-4 py-3 text-sm bg-white border border-rose-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-right text-slate-800 placeholder:text-slate-300 transition"
                   />
                 </div>
 
@@ -315,7 +312,7 @@ export default function QuickServicesBar() {
                   disabled={loading}
                   className="w-full bg-[#E11D48] hover:bg-[#BE123C] text-white py-3.5 rounded-2xl font-bold text-sm transition-all shadow-xs disabled:opacity-60 cursor-pointer mt-2"
                 >
-                  {loading ? "جاري الإلغاء..." : "إلغي طلبي"}
+                  {loading ? "جاري الإلغاء..." : "إلغاء طلبي"}
                 </button>
               </form>
             </div>

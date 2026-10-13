@@ -1,9 +1,9 @@
 "use client";
 
-/* Product images are external URLs and use a native fallback on load errors. */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "@/src/context/CartContext";
 import { Receipt, X } from "lucide-react";
 import CartItemList from "./CartItemList";
@@ -11,16 +11,23 @@ import OrderPricingSummary from "./OrderPricingSummary";
 import CustomerInfoForm from "./CustomerInfoForm";
 import OrderSuccessCard from "./OrderSuccessCard";
 
-const DELIVERY_FEE = 10;
+const DELIVERY_FEE = 15;
 
-export default function CheckoutForm() {
-  const { cart, clearCart, totalPrice } = useCart();
+function CheckoutFormContent() {
+  const { cart, clearCart, subtotalPrice } = useCart();
+  const searchParams = useSearchParams();
+  const tableNumber = searchParams.get("table")?.trim() || null;
+  const isDineIn = Boolean(tableNumber);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [isPickup, setIsPickup] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "instapay" | "vodafone_cash"
+  >("cash");
+  const [paymentReceipt, setPaymentReceipt] = useState("");
 
   const [zoomedImage, setZoomedImage] = useState<{
     src: string;
@@ -30,16 +37,13 @@ export default function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successOrderNumber, setSuccessOrderNumber] = useState<string | null>(
-    null,
+    null
   );
   const [submittedPhone, setSubmittedPhone] = useState("");
 
-  const deliveryFee = isPickup ? 0 : DELIVERY_FEE;
-  const finalTotal = totalPrice > 0 ? totalPrice + deliveryFee : 0;
-
-  const generateOrderNumber = () => {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-  };
+  const totalPrice = Number(subtotalPrice || 0);
+  const deliveryFee = isDineIn || isPickup ? 0 : DELIVERY_FEE;
+  const finalTotal = totalPrice + deliveryFee;
 
   const resetFormFields = () => {
     clearCart();
@@ -48,6 +52,8 @@ export default function CheckoutForm() {
     setAddress("");
     setNotes("");
     setIsPickup(false);
+    setPaymentMethod("cash");
+    setPaymentReceipt("");
   };
 
   const handleNewOrder = () => {
@@ -60,25 +66,51 @@ export default function CheckoutForm() {
     setError(null);
 
     if (cart.length === 0) {
-      setError("الرجاء اختيار منتج واحد على الأقل قبل إرسال الطلب");
+      setError("الرجاء اختيار وجبة واحدة على الأقل قبل إرسال الطلب");
       return;
     }
 
     const phoneRegex = /^01(0|1|2|5)[0-9]{8}$/;
-    if (!phoneRegex.test(phone.trim())) {
+
+    // التحقق من البيانات حسب نوع الطلب (دليفري / استلام / صالة QR)
+    if (!isDineIn) {
+      if (!name.trim()) {
+        setError("يرجى إدخال الاسم الكامل");
+        return;
+      }
+      if (!phoneRegex.test(phone.trim())) {
+        setError(
+          "أدخل رقم هاتف صحيح مكون من 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015"
+        );
+        return;
+      }
+      if (!isPickup && !address.trim()) {
+        setError("يرجى إدخال عنوان التوصيل بالتفصيل");
+        return;
+      }
+    } else if (phone.trim() && !phoneRegex.test(phone.trim())) {
+      setError("رقم الهاتف المدخل غير صحيح، يجب أن يتكون من 11 رقماً");
+      return;
+    }
+
+    // التحقق من إرفاق صورة التحويل عند اختيار إنستاباي أو فودافون كاش
+    if (
+      (paymentMethod === "instapay" || paymentMethod === "vodafone_cash") &&
+      !paymentReceipt
+    ) {
       setError(
-        "أدخل رقم هاتف صحيح مكون من 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015",
+        "يرجى إرفاق صورة إيصال التحويل لتأكيد الدفع عبر إنستاباي أو فودافون كاش"
       );
       return;
     }
 
-    if (!isPickup && !address.trim()) {
-      setError("يرجى إدخال عنوان التوصيل بالتفصيل");
-      return;
-    }
-
     setLoading(true);
-    const orderNumber = generateOrderNumber();
+
+    const orderType = isDineIn
+      ? "dine_in"
+      : isPickup
+      ? "pickup"
+      : "delivery";
 
     try {
       const apiUrl =
@@ -87,20 +119,27 @@ export default function CheckoutForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          orderNumber,
-          customerName: name.trim(),
-          phoneNumber: phone.trim(),
-          address: isPickup ? "الاستلام من الجمعية" : address.trim(),
+          orderType,
+          tableNumber: isDineIn ? tableNumber : "",
+          customerName:
+            name.trim() ||
+            (isDineIn ? `عميل صالة - ترابيزة ${tableNumber}` : "عميل السرايا"),
+          phone: phone.trim(),
+          address: isDineIn
+            ? `صالة المطعم - ترابيزة ${tableNumber}`
+            : isPickup
+            ? "الاستلام من الفرع"
+            : address.trim(),
           notes: notes.trim(),
-          deliveryFee,
-          pickupFromAssociation: isPickup,
-          totalAmount: finalTotal,
+          paymentMethod,
+          paymentReceipt,
           items: cart.map((item) => ({
             productId: item._id,
             name: item.name,
+            size: item.selectedSize || "",
             quantity: item.cartQuantity,
-            unitPrice: item.price,
-            totalPrice: item.price * item.cartQuantity,
+            price: item.price,
+            image: item.image,
           })),
         }),
       });
@@ -108,13 +147,15 @@ export default function CheckoutForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "تعذر إرسال الطلب");
 
-      setSubmittedPhone(phone.trim());
-      setSuccessOrderNumber(orderNumber);
+      setSubmittedPhone(
+        phone.trim() || (isDineIn ? `ترابيزة #${tableNumber}` : "")
+      );
+      setSuccessOrderNumber(String(data.orderNumber || data._id || ""));
 
       resetFormFields();
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر",
+        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر"
       );
     } finally {
       setLoading(false);
@@ -135,11 +176,14 @@ export default function CheckoutForm() {
     <>
       <div
         id="order-summary"
-        className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sticky top-24 space-y-6 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto custom-scrollbar"
+        className="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 sm:p-6 sticky top-24 space-y-5 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar"
+        dir="rtl"
       >
         <div className="flex items-center gap-2 text-slate-900 border-b border-slate-100 pb-3">
-          <Receipt className="w-5 h-5 text-indigo-600" />
-          <h3 className="text-lg font-bold">ملخص الطلب والحساب</h3>
+          <Receipt className="w-5 h-5 text-[#D55304]" />
+          <h3 className="text-base sm:text-lg font-extrabold">
+            ملخص الطلب والحساب
+          </h3>
         </div>
 
         <CartItemList onZoomImage={setZoomedImage} />
@@ -148,6 +192,7 @@ export default function CheckoutForm() {
           totalPrice={totalPrice}
           deliveryFee={deliveryFee}
           isPickup={isPickup}
+          isDineIn={isDineIn}
           finalTotal={finalTotal}
         />
 
@@ -162,6 +207,11 @@ export default function CheckoutForm() {
           setNotes={setNotes}
           isPickup={isPickup}
           setIsPickup={setIsPickup}
+          tableNumber={tableNumber}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          paymentReceipt={paymentReceipt}
+          setPaymentReceipt={setPaymentReceipt}
           loading={loading}
           error={error}
           isCartEmpty={cart.length === 0}
@@ -171,7 +221,7 @@ export default function CheckoutForm() {
 
       {zoomedImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in duration-200"
           onClick={() => setZoomedImage(null)}
         >
           <div
@@ -180,7 +230,7 @@ export default function CheckoutForm() {
           >
             <button
               type="button"
-              className="absolute left-0 z-10 bg-slate-900/70 hover:bg-slate-900 text-white rounded-full p-2 transition-colors"
+              className="absolute top-3 left-3 z-10 bg-white/90 hover:bg-[#D55304] hover:text-white text-slate-800 rounded-full p-2 transition-colors cursor-pointer"
               onClick={() => setZoomedImage(null)}
             >
               <X className="w-4 h-4" />
@@ -188,11 +238,25 @@ export default function CheckoutForm() {
             <img
               src={zoomedImage.src}
               alt={zoomedImage.name}
-              className="w-full h-auto max-h-[75vh] object-contain rounded-xl"
+              className="w-full h-auto max-h-[75vh] object-contain rounded-xl bg-white"
             />
           </div>
         </div>
       )}
     </>
+  );
+}
+
+export default function CheckoutForm() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 text-center text-slate-400 text-xs">
+          جاري تحميل السلة...
+        </div>
+      }
+    >
+      <CheckoutFormContent />
+    </Suspense>
   );
 }
