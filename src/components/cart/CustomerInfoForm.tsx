@@ -1,8 +1,6 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-
-import React, { useRef } from "react";
+import React from "react";
 import {
   User,
   Phone,
@@ -11,12 +9,12 @@ import {
   Truck,
   Store,
   CreditCard,
-  ImagePlus,
   Send,
   Loader2,
   AlertCircle,
   UtensilsCrossed,
-  X,
+  ExternalLink,
+  Smartphone,
 } from "lucide-react";
 
 interface CustomerInfoFormProps {
@@ -31,20 +29,21 @@ interface CustomerInfoFormProps {
   isPickup: boolean;
   setIsPickup: (val: boolean) => void;
   tableNumber?: string | null;
-  paymentMethod: "cash" | "instapay" | "vodafone_cash";
-  setPaymentMethod: (val: "cash" | "instapay" | "vodafone_cash") => void;
-  paymentReceipt: string;
-  setPaymentReceipt: (val: string) => void;
+  paymentMethod: "instapay" | "vodafone_cash";
+  setPaymentMethod: (val: "instapay" | "vodafone_cash") => void;
+  transferNumber: string;
+  setTransferNumber: (val: string) => void;
   loading: boolean;
   error: string | null;
   isCartEmpty: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }
 
-const INSTAPAY_ACCOUNT =
-  process.env.NEXT_PUBLIC_INSTAPAY_ACCOUNT || "saraya@instapay / 01080859921";
-const VODAFONE_CASH_NUMBER =
-  process.env.NEXT_PUBLIC_VODAFONE_CASH || "01080859921";
+const INSTAPAY_DISPLAY = "saraya@instapay / 01080859921";
+const INSTAPAY_LINK = "https://ipn.eg/S/aswany2030/instapay/4hwJiI";
+
+const VODAFONE_CASH_DISPLAY = "01080859921";
+const VODAFONE_CASH_LINK = "http://vf.eg/vfcash?id=mt&qrId=HKeNQu";
 
 export default function CustomerInfoForm({
   name,
@@ -60,51 +59,14 @@ export default function CustomerInfoForm({
   tableNumber,
   paymentMethod,
   setPaymentMethod,
-  paymentReceipt,
-  setPaymentReceipt,
+  transferNumber,
+  setTransferNumber,
   loading,
   error,
   isCartEmpty,
   onSubmit,
 }: CustomerInfoFormProps) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const isDineIn = Boolean(tableNumber);
-  const requiresReceipt =
-    paymentMethod === "instapay" || paymentMethod === "vodafone_cash";
-
-  // ضغط وتحويل صورة الإيصال إلى Base64 لسرعة الرفع والإرسال للتلجرام
-  const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const maxDim = 1000;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height && width > maxDim) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        } else if (height > maxDim) {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0, width, height);
-        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.78);
-        setPaymentReceipt(compressedBase64);
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  };
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 pt-1" dir="rtl">
@@ -140,7 +102,7 @@ export default function CustomerInfoForm({
         </div>
       )}
 
-      {/* حقل الاسم الكامل (إجباري في الدليفري، اختياري في الصالة) */}
+      {/* حقل الاسم الكامل */}
       <div>
         <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
           <span>الاسم الكامل</span>
@@ -167,7 +129,7 @@ export default function CustomerInfoForm({
         </div>
       </div>
 
-      {/* حقل رقم الهاتف (إجباري في الدليفري، اختياري في الصالة) */}
+      {/* حقل رقم الهاتف */}
       <div>
         <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
           <span>رقم الهاتف</span>
@@ -197,16 +159,17 @@ export default function CustomerInfoForm({
         </div>
       </div>
 
-      {/* أزرار اختيار (توصيل للمنازل / الإستلام من الفرع) - تظهر لغير عميل الترابيزة */}
+      {/* أزرار اختيار (توصيل للمنازل / الإستلام من الفرع) */}
       {!isDineIn && (
         <div className="grid grid-cols-2 gap-2.5 pt-1">
           <button
             type="button"
             onClick={() => setIsPickup(false)}
-            className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer border ${!isPickup
+            className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
+              !isPickup
                 ? "bg-[#D55304] text-white border-[#D55304] shadow-sm"
                 : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-              }`}
+            }`}
           >
             <Truck className="w-4 h-4 shrink-0" />
             <span>توصيل للمنازل</span>
@@ -215,17 +178,19 @@ export default function CustomerInfoForm({
           <button
             type="button"
             onClick={() => setIsPickup(true)}
-            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer border ${isPickup
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
+              isPickup
                 ? "bg-[#D55304] text-white border-[#D55304] shadow-sm"
                 : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-              }`}
+            }`}
           >
             <Store className="w-4 h-4 shrink-0" />
             <div className="flex flex-col items-start leading-tight">
               <span>الإستلام من الفرع</span>
               <span
-                className={`text-[9px] font-normal ${isPickup ? "text-orange-100" : "text-slate-400"
-                  }`}
+                className={`text-[9px] font-normal ${
+                  isPickup ? "text-orange-100" : "text-slate-400"
+                }`}
               >
                 (بدون رسوم توصيل)
               </span>
@@ -234,7 +199,7 @@ export default function CustomerInfoForm({
         </div>
       )}
 
-      {/* حقل العنوان التفصيلي (يظهر فقط في حالة التوصيل للمنازل) */}
+      {/* حقل العنوان التفصيلي */}
       {!isDineIn && !isPickup && (
         <div className="animate-in fade-in duration-200">
           <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
@@ -272,8 +237,8 @@ export default function CustomerInfoForm({
         />
       </div>
 
-      {/* قسم طريقة الدفع مطابق للصورة */}
-      <div className="space-y-2.5 pt-1">
+      {/* قسم طريقة الدفع (إنستاباي أو فودافون كاش فقط) */}
+      <div className="space-y-3 pt-1">
         <div className="flex items-center gap-1.5">
           <CreditCard className="w-4 h-4 text-[#D55304]" />
           <span className="text-xs font-extrabold text-slate-800">
@@ -281,65 +246,47 @@ export default function CustomerInfoForm({
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {/* كاش */}
-          <button
-            type="button"
-            onClick={() => setPaymentMethod("cash")}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${paymentMethod === "cash"
-                ? "border-[#D55304] bg-orange-50/60 text-[#D55304]"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-          >
-            <span
-              className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${paymentMethod === "cash"
-                  ? "border-[#D55304]"
-                  : "border-slate-300"
-                }`}
-            >
-              {paymentMethod === "cash" && (
-                <span className="w-2 h-2 rounded-full bg-[#D55304]" />
-              )}
-            </span>
-            <span>{isDineIn ? "كاش للكاشير" : "كاش عند الاستلام"}</span>
-          </button>
-
+        <div className="grid grid-cols-2 gap-2.5">
           {/* إنستاباي */}
           <button
             type="button"
             onClick={() => setPaymentMethod("instapay")}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${paymentMethod === "instapay"
-                ? "border-[#D55304] bg-orange-50/60 text-[#D55304]"
+            className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border text-xs font-extrabold transition-all cursor-pointer ${
+              paymentMethod === "instapay"
+                ? "border-[#D55304] bg-orange-50/70 text-[#D55304] shadow-2xs"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
+            }`}
           >
             <span
-              className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${paymentMethod === "instapay"
+              className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                paymentMethod === "instapay"
                   ? "border-[#D55304]"
                   : "border-slate-300"
-                }`}
+              }`}
             >
               {paymentMethod === "instapay" && (
                 <span className="w-2 h-2 rounded-full bg-[#D55304]" />
               )}
             </span>
-            <span>إنستاباي</span>
+            <span>إنستاباي (InstaPay)</span>
           </button>
 
           {/* فودافون كاش */}
           <button
             type="button"
             onClick={() => setPaymentMethod("vodafone_cash")}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${paymentMethod === "vodafone_cash"
-                ? "border-[#D55304] bg-orange-50/60 text-[#D55304]"
+            className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border text-xs font-extrabold transition-all cursor-pointer ${
+              paymentMethod === "vodafone_cash"
+                ? "border-[#D55304] bg-orange-50/70 text-[#D55304] shadow-2xs"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
+            }`}
           >
             <span
-              className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${paymentMethod === "vodafone_cash"
+              className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                paymentMethod === "vodafone_cash"
                   ? "border-[#D55304]"
                   : "border-slate-300"
-                }`}
+              }`}
             >
               {paymentMethod === "vodafone_cash" && (
                 <span className="w-2 h-2 rounded-full bg-[#D55304]" />
@@ -349,86 +296,65 @@ export default function CustomerInfoForm({
           </button>
         </div>
 
-        {/* عرض رقم التحويل عند اختيار إنستاباي أو فودافون كاش */}
-        {requiresReceipt && (
-          <div className="bg-orange-50/80 border border-[#D55304]/25 rounded-xl p-2.5 text-center text-xs space-y-0.5 animate-in fade-in duration-150">
-            <p className="text-slate-600 font-medium">
-              {paymentMethod === "instapay"
-                ? "حساب إنستاباي للتحويل:"
-                : "رقم محفظة فودافون كاش للتحويل:"}
+        {/* بطاقة رابط التحويل المباشر حسب الوسيلة المختارة */}
+        {paymentMethod === "instapay" ? (
+          <a
+            href={INSTAPAY_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-orange-50/90 hover:bg-orange-100/80 border border-[#D55304]/30 rounded-xl p-3 text-center transition-all group shadow-2xs"
+          >
+            <p className="text-[11px] text-slate-600 font-bold mb-1">
+              اضغط هنا للتحويل مباشرة عبر تطبيق إنستاباي:
             </p>
-            <p className="font-extrabold text-[#D55304] text-sm font-mono dir-ltr select-all">
-              {paymentMethod === "instapay"
-                ? INSTAPAY_ACCOUNT
-                : VODAFONE_CASH_NUMBER}
+            <div className="inline-flex items-center justify-center gap-1.5 font-extrabold text-[#D55304] text-sm font-mono dir-ltr group-hover:underline">
+              <span>{INSTAPAY_DISPLAY}</span>
+              <ExternalLink className="w-4 h-4 shrink-0" />
+            </div>
+          </a>
+        ) : (
+          <a
+            href={VODAFONE_CASH_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-orange-50/90 hover:bg-orange-100/80 border border-[#D55304]/30 rounded-xl p-3 text-center transition-all group shadow-2xs"
+          >
+            <p className="text-[11px] text-slate-600 font-bold mb-1">
+              رقم محفظة فودافون كاش للتحويل (اضغط للدفع السريع):
             </p>
-          </div>
+            <div className="inline-flex items-center justify-center gap-1.5 font-extrabold text-[#D55304] text-base font-mono dir-ltr group-hover:underline">
+              <span>{VODAFONE_CASH_DISPLAY}</span>
+              <ExternalLink className="w-4 h-4 shrink-0" />
+            </div>
+          </a>
         )}
 
-        {/* صندوق إرفاق صورة إيصال التحويل مطابق للصورة */}
+        {/* حقل الرقم الذي حولت منه المبلغ (بديل صورة الإيصال) */}
         <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleReceiptChange}
-            className="hidden"
-          />
-
-          {paymentReceipt ? (
-            <div className="relative rounded-xl border-2 border-[#D55304]/40 bg-orange-50/30 p-2 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <img
-                  src={paymentReceipt}
-                  alt="إيصال التحويل"
-                  className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
-                />
-                <div className="text-right truncate">
-                  <p className="text-xs font-extrabold text-emerald-700">
-                    تم إرفاق صورة الإيصال بنجاح
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-[11px] text-[#D55304] underline font-semibold cursor-pointer"
-                  >
-                    تغيير الصورة
-                  </button>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPaymentReceipt("")}
-                className="p-1.5 rounded-full bg-rose-100 text-rose-600 hover:bg-rose-200 transition cursor-pointer"
-                title="حذف الصورة"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={`rounded-xl border-2 border-dashed p-3.5 text-center transition-all cursor-pointer ${requiresReceipt
-                  ? "border-[#D55304]/60 bg-orange-50/40 hover:bg-orange-50"
-                  : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/70"
-                }`}
-            >
-              <div className="flex items-center justify-center gap-2 text-slate-700 font-bold text-xs">
-                <ImagePlus
-                  className={`w-4 h-4 ${requiresReceipt ? "text-[#D55304]" : "text-slate-400"
-                    }`}
-                />
-                <span>ارفق صورة إيصال التحويل</span>
-              </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">
-                (عند استخدام إنستاباي أو فودافون كاش)
-              </p>
-            </div>
-          )}
+          <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
+            <span>الرقم الذي حولت منه المبلغ</span>
+            <span className="text-[#D55304]">*</span>
+          </label>
+          <div className="relative">
+            <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <Smartphone className="w-4 h-4 text-[#D55304]" />
+            </span>
+            <input
+              type="text"
+              required
+              value={transferNumber}
+              onChange={(e) => setTransferNumber(e.target.value)}
+              placeholder="اكتب الرقم أو حساب إنستاباي المحول منه..."
+              className="w-full pr-9 pl-3 py-2.5 bg-white border border-[#D55304]/40 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-[#D55304] focus:ring-2 focus:ring-[#D55304]/15 transition-all text-left dir-ltr"
+            />
+          </div>
+          <p className="text-[10px] text-slate-400 mt-1">
+            يرجى كتابة الرقم المحول منه لتأكيد طلبك فوراً في المطبخ
+          </p>
         </div>
       </div>
 
-      {/* زر التأكيد وإرسال الطلب باللون البرتقالي #D55304 */}
+      {/* زر التأكيد وإرسال الطلب */}
       <button
         type="submit"
         disabled={loading || isCartEmpty}

@@ -25,9 +25,9 @@ function CheckoutFormContent() {
   const [notes, setNotes] = useState("");
   const [isPickup, setIsPickup] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<
-    "cash" | "instapay" | "vodafone_cash"
-  >("cash");
-  const [paymentReceipt, setPaymentReceipt] = useState("");
+    "instapay" | "vodafone_cash"
+  >("instapay");
+  const [transferNumber, setTransferNumber] = useState("");
 
   const [zoomedImage, setZoomedImage] = useState<{
     src: string;
@@ -52,8 +52,8 @@ function CheckoutFormContent() {
     setAddress("");
     setNotes("");
     setIsPickup(false);
-    setPaymentMethod("cash");
-    setPaymentReceipt("");
+    setPaymentMethod("instapay");
+    setTransferNumber("");
   };
 
   const handleNewOrder = () => {
@@ -72,7 +72,6 @@ function CheckoutFormContent() {
 
     const phoneRegex = /^01(0|1|2|5)[0-9]{8}$/;
 
-    // التحقق من البيانات حسب نوع الطلب (دليفري / استلام / صالة QR)
     if (!isDineIn) {
       if (!name.trim()) {
         setError("يرجى إدخال الاسم الكامل");
@@ -93,14 +92,8 @@ function CheckoutFormContent() {
       return;
     }
 
-    // التحقق من إرفاق صورة التحويل عند اختيار إنستاباي أو فودافون كاش
-    if (
-      (paymentMethod === "instapay" || paymentMethod === "vodafone_cash") &&
-      !paymentReceipt
-    ) {
-      setError(
-        "يرجى إرفاق صورة إيصال التحويل لتأكيد الدفع عبر إنستاباي أو فودافون كاش"
-      );
+    if (!transferNumber.trim()) {
+      setError("يرجى إدخال الرقم الذي حولت منه المبلغ لتأكيد الدفع");
       return;
     }
 
@@ -132,7 +125,8 @@ function CheckoutFormContent() {
             : address.trim(),
           notes: notes.trim(),
           paymentMethod,
-          paymentReceipt,
+          paymentReceipt: transferNumber.trim(), // يحفظ الرقم المحول منه بدلاً من Base64
+          transferNumber: transferNumber.trim(),
           items: cart.map((item) => ({
             productId: item._id,
             name: item.name,
@@ -148,7 +142,7 @@ function CheckoutFormContent() {
       if (!res.ok) throw new Error(data.message || "تعذر إرسال الطلب");
 
       setSubmittedPhone(
-        phone.trim() || (isDineIn ? `ترابيزة #${tableNumber}` : "")
+        phone.trim() || (isDineIn ? `ترابيزة #${tableNumber}` : transferNumber.trim())
       );
       setSuccessOrderNumber(String(data.orderNumber || data._id || ""));
 
@@ -210,8 +204,8 @@ function CheckoutFormContent() {
           tableNumber={tableNumber}
           paymentMethod={paymentMethod}
           setPaymentMethod={setPaymentMethod}
-          paymentReceipt={paymentReceipt}
-          setPaymentReceipt={setPaymentReceipt}
+          transferNumber={transferNumber}
+          setTransferNumber={setTransferNumber}
           loading={loading}
           error={error}
           isCartEmpty={cart.length === 0}
