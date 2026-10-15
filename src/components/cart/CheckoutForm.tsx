@@ -37,7 +37,7 @@ function CheckoutFormContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successOrderNumber, setSuccessOrderNumber] = useState<string | null>(
-    null
+    null,
   );
   const [submittedPhone, setSubmittedPhone] = useState("");
 
@@ -79,7 +79,7 @@ function CheckoutFormContent() {
       }
       if (!phoneRegex.test(phone.trim())) {
         setError(
-          "أدخل رقم هاتف صحيح مكون من 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015"
+          "أدخل رقم هاتف صحيح مكون من 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015",
         );
         return;
       }
@@ -99,11 +99,7 @@ function CheckoutFormContent() {
 
     setLoading(true);
 
-    const orderType = isDineIn
-      ? "dine_in"
-      : isPickup
-      ? "pickup"
-      : "delivery";
+    const orderType = isDineIn ? "dine_in" : isPickup ? "pickup" : "delivery";
 
     try {
       const apiUrl =
@@ -121,11 +117,11 @@ function CheckoutFormContent() {
           address: isDineIn
             ? `صالة المطعم - ترابيزة ${tableNumber}`
             : isPickup
-            ? "الاستلام من الفرع"
-            : address.trim(),
+              ? "الاستلام من الفرع"
+              : address.trim(),
           notes: notes.trim(),
           paymentMethod,
-          paymentReceipt: transferNumber.trim(), // يحفظ الرقم المحول منه بدلاً من Base64
+          paymentReceipt: transferNumber.trim(),
           transferNumber: transferNumber.trim(),
           items: cart.map((item) => ({
             productId: item._id,
@@ -142,14 +138,15 @@ function CheckoutFormContent() {
       if (!res.ok) throw new Error(data.message || "تعذر إرسال الطلب");
 
       setSubmittedPhone(
-        phone.trim() || (isDineIn ? `ترابيزة #${tableNumber}` : transferNumber.trim())
+        phone.trim() ||
+          (isDineIn ? `ترابيزة #${tableNumber}` : transferNumber.trim()),
       );
       setSuccessOrderNumber(String(data.orderNumber || data._id || ""));
 
       resetFormFields();
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر"
+        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر",
       );
     } finally {
       setLoading(false);

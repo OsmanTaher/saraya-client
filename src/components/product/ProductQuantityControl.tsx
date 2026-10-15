@@ -26,7 +26,6 @@ export default function ProductQuantityControl({
       className="px-4 py-3 mt-1 border-t border-slate-100 flex items-center justify-between gap-2"
       dir="rtl"
     >
-      {/* قسم اختيار الحجم (يظهر إذا كان للوجبة أحجام، وإلا يظهر نص حجم موحد هادئ) */}
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
         {hasSizes ? (
           <>
@@ -46,13 +45,10 @@ export default function ProductQuantityControl({
             </select>
           </>
         ) : (
-          <span className="text-xs font-medium text-slate-400">
-            حجم موحد
-          </span>
+          <span className="text-xs font-medium text-slate-400">حجم موحد</span>
         )}
       </div>
 
-      {/* أزرار التحكم بالكمية باللون البرتقالي #D55304 */}
       <div className="flex items-center gap-1 bg-slate-50 border border-slate-200/80 rounded-xl p-0.5 shrink-0">
         <button
           type="button"

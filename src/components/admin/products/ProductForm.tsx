@@ -1,6 +1,5 @@
 "use client";
 
-/* Preview images come from Cloudinary and are selected dynamically by the user. */
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useRef } from "react";

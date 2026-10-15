@@ -8,11 +8,18 @@ import QuickServicesBar from "../components/home/QuickServicesBar";
 import { Flame, UtensilsCrossed } from "lucide-react";
 
 const CATEGORY_ORDER = [
-  "مشويات",
-  "سندوتشات",
-  "وجبات",
-  "مقبلات وسلطات",
-  "مشروبات",
+  "المشويات على الفحم",
+  "البيتزا",
+  "الأكل الإيطالي",
+  "الطواجن والأطباق الشرقية",
+  "الوجبات والصواني",
+  "السندوتشات والبرجر",
+  "المأكولات البحرية (سي فود)",
+  "الشوربة",
+  "السلطات والمقبلات الباردة",
+  "المقبلات الساخنة والأطباق الجانبية",
+  "الحلويات",
+  "المشروبات",
 ];
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -48,13 +55,13 @@ export default async function HomePage({
     new Set([
       ...CATEGORY_ORDER,
       ...displayedProducts.map((product) => product.category?.trim()),
-    ])
+    ]),
   )
     .filter((category): category is string => Boolean(category))
     .map((category) => ({
       name: category,
       products: displayedProducts.filter(
-        (product) => product.category?.trim() === category
+        (product) => product.category?.trim() === category,
       ),
     }))
     .filter((group) => group.products.length > 0);
@@ -65,7 +72,6 @@ export default async function HomePage({
     <>
       <Header />
       <main className="container mx-auto px-4 py-4">
-        {/* لافتة الترحيب بطلبات الصالة عند مسح الـ QR Code */}
         {currentTable && (
           <div className="mb-5 flex items-center justify-between rounded-2xl bg-orange-50 border border-[#D55304]/30 px-4 py-3 text-[#D55304] shadow-xs">
             <div className="flex items-center gap-3">
@@ -88,7 +94,6 @@ export default async function HomePage({
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* قسم الوجبات (يمين في شاشات اللاب توب) */}
           <div className="lg:col-span-7 w-full">
             <div className="mb-4 flex justify-between items-start">
               <div>
@@ -142,7 +147,6 @@ export default async function HomePage({
             )}
           </div>
 
-          {/* قسم ملخص الطلب والحساب (يسار في شاشات اللاب توب) */}
           <div className="sticky top-20 lg:col-span-5 w-full">
             <CheckoutForm />
           </div>

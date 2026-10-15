@@ -38,7 +38,6 @@ export default function AdminProductsPage() {
   };
 
   useEffect(() => {
-    // Fetching products synchronizes component state with the API.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps

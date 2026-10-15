@@ -79,7 +79,6 @@ export default function CustomerInfoForm({
         </div>
       )}
 
-      {/* عنوان قسم البيانات */}
       <div className="flex items-center gap-2 pt-1">
         <User className="w-4 h-4 text-[#D55304]" />
         <h4 className="text-sm font-extrabold text-slate-800">
@@ -89,7 +88,6 @@ export default function CustomerInfoForm({
         </h4>
       </div>
 
-      {/* لافتة رقم الترابيزة في حالة المسح عبر QR Code */}
       {isDineIn && (
         <div className="flex items-center justify-between bg-orange-50 border border-[#D55304]/30 rounded-xl p-3 text-xs">
           <div className="flex items-center gap-2 font-bold text-slate-800">
@@ -102,7 +100,6 @@ export default function CustomerInfoForm({
         </div>
       )}
 
-      {/* حقل الاسم الكامل */}
       <div>
         <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
           <span>الاسم الكامل</span>
@@ -129,7 +126,6 @@ export default function CustomerInfoForm({
         </div>
       </div>
 
-      {/* حقل رقم الهاتف */}
       <div>
         <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
           <span>رقم الهاتف</span>
@@ -159,7 +155,6 @@ export default function CustomerInfoForm({
         </div>
       </div>
 
-      {/* أزرار اختيار (توصيل للمنازل / الإستلام من الفرع) */}
       {!isDineIn && (
         <div className="grid grid-cols-2 gap-2.5 pt-1">
           <button
@@ -199,7 +194,6 @@ export default function CustomerInfoForm({
         </div>
       )}
 
-      {/* حقل العنوان التفصيلي */}
       {!isDineIn && !isPickup && (
         <div className="animate-in fade-in duration-200">
           <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
@@ -222,7 +216,6 @@ export default function CustomerInfoForm({
         </div>
       )}
 
-      {/* حقل الملاحظات الإضافية */}
       <div>
         <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
           <FileText className="w-3.5 h-3.5 text-slate-400" />
@@ -237,7 +230,6 @@ export default function CustomerInfoForm({
         />
       </div>
 
-      {/* قسم طريقة الدفع (إنستاباي أو فودافون كاش فقط) */}
       <div className="space-y-3 pt-1">
         <div className="flex items-center gap-1.5">
           <CreditCard className="w-4 h-4 text-[#D55304]" />
@@ -247,7 +239,6 @@ export default function CustomerInfoForm({
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">
-          {/* إنستاباي */}
           <button
             type="button"
             onClick={() => setPaymentMethod("instapay")}
@@ -271,7 +262,6 @@ export default function CustomerInfoForm({
             <span>إنستاباي (InstaPay)</span>
           </button>
 
-          {/* فودافون كاش */}
           <button
             type="button"
             onClick={() => setPaymentMethod("vodafone_cash")}
@@ -296,7 +286,6 @@ export default function CustomerInfoForm({
           </button>
         </div>
 
-        {/* بطاقة رابط التحويل المباشر حسب الوسيلة المختارة */}
         {paymentMethod === "instapay" ? (
           <a
             href={INSTAPAY_LINK}
@@ -329,7 +318,6 @@ export default function CustomerInfoForm({
           </a>
         )}
 
-        {/* حقل الرقم الذي حولت منه المبلغ (بديل صورة الإيصال) */}
         <div>
           <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
             <span>الرقم الذي حولت منه المبلغ</span>
@@ -340,9 +328,12 @@ export default function CustomerInfoForm({
               <Smartphone className="w-4 h-4 text-[#D55304]" />
             </span>
             <input
-              type="text"
+              type="tel"
               required
               value={transferNumber}
+              minLength={11}
+              maxLength={11}
+              inputMode="numeric"
               onChange={(e) => setTransferNumber(e.target.value)}
               placeholder="اكتب الرقم أو حساب إنستاباي المحول منه..."
               className="w-full pr-9 pl-3 py-2.5 bg-white border border-[#D55304]/40 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-[#D55304] focus:ring-2 focus:ring-[#D55304]/15 transition-all text-left dir-ltr"
@@ -354,7 +345,6 @@ export default function CustomerInfoForm({
         </div>
       </div>
 
-      {/* زر التأكيد وإرسال الطلب */}
       <button
         type="submit"
         disabled={loading || isCartEmpty}

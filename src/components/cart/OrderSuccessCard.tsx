@@ -39,7 +39,7 @@ export default function OrderSuccessCard({
         تم استلام طلبك بنجاح!
       </h3>
       <p className="text-xs text-slate-500">
-        وصل طلبك الآن إلى مطبخ السرايا وجارٍ تحضيره.
+        وصل طلبك الآن سيراجع الدفع ثم تحضير طلبك .
       </p>
 
       {phoneNumber && (

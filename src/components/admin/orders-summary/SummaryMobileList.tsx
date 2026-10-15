@@ -1,6 +1,5 @@
 "use client";
 
-/* Product images are user-provided external URLs and need native fallback handling. */
 /* eslint-disable @next/next/no-img-element */
 
 import { AggregatedSummaryItem } from "./SummaryDesktopTable";

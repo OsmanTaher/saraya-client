@@ -13,7 +13,7 @@ import {
   Package,
   LogOut,
   Loader2,
-  Printer
+  Printer,
 } from "lucide-react";
 import { getCookie, deleteCookie } from "@/src/lib/cookies";
 
@@ -37,7 +37,6 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (pathname === "/admin") {
-      // The login page is the authentication boundary for this route tree.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsAuthenticated(true);
       return;
@@ -98,7 +97,6 @@ export default function AdminLayout({
   }, []);
 
   useEffect(() => {
-    // Reset menu state when navigation completes.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMenuOpen(false);
   }, [pathname]);

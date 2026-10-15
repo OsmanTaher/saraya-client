@@ -9,52 +9,65 @@ interface CartContextType {
     product: Product,
     quantity?: number,
     selectedSize?: string,
-    customPrice?: number
+    customPrice?: number,
   ) => void;
   removeFromCart: (productId: string, selectedSize?: string) => void;
   updateQuantity: (
     productId: string,
     quantity: number,
-    selectedSize?: string
+    selectedSize?: string,
   ) => void;
   clearCart: () => void;
   totalItems: number;
   subtotalPrice: number;
-  totalPrice: number; // متوافق مع CheckoutForm وباقي المكونات
+  totalPrice: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+const CART_STORAGE_KEY = "saraya_cart";
 
 export const getCartItemKey = (productId: string, selectedSize?: string) =>
   selectedSize ? `${productId}__${selectedSize}` : productId;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // 1. تحميل البيانات من localStorage عند فتح الموقع لأول مرة فقط
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("saraya_cart");
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
       if (saved) {
-        setCart(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setCart(parsed);
+        }
       }
     } catch (err) {
       console.error("Failed to load cart from localStorage:", err);
+    } finally {
+      setIsInitialized(true); // تفعيل الحفظ بعد انتهاء التحميل
     }
   }, []);
 
+  // 2. حفظ التعديلات في localStorage فقط بعد التأكد من انتهاء التحميل الأولي
   useEffect(() => {
+    if (!isInitialized) return;
+
     try {
-      localStorage.setItem("saraya_cart", JSON.stringify(cart));
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     } catch (err) {
       console.error("Failed to save cart to localStorage:", err);
     }
-  }, [cart]);
+  }, [cart, isInitialized]);
 
   const addToCart = (
     product: Product,
     quantity = 1,
     selectedSize = "",
-    customPrice?: number
+    customPrice?: number,
   ) => {
     const key = getCartItemKey(product._id, selectedSize);
     const unitPrice = customPrice !== undefined ? customPrice : product.price;
@@ -63,7 +76,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existingIndex = prev.findIndex(
         (item) =>
           (item.cartItemId || getCartItemKey(item._id, item.selectedSize)) ===
-          key
+          key,
       );
 
       if (existingIndex > -1) {
@@ -72,6 +85,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           ...updated[existingIndex],
           cartQuantity: updated[existingIndex].cartQuantity + quantity,
           price: unitPrice,
+          effectivePrice: unitPrice,
         };
         return updated;
       }
@@ -82,6 +96,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           ...product,
           cartItemId: key,
           price: unitPrice,
+          effectivePrice: unitPrice,
           selectedSize,
           cartQuantity: quantity,
         },
@@ -95,15 +110,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       prev.filter(
         (item) =>
           (item.cartItemId || getCartItemKey(item._id, item.selectedSize)) !==
-            key && item._id !== key
-      )
+            key && item._id !== key,
+      ),
     );
   };
 
   const updateQuantity = (
     productId: string,
     quantity: number,
-    selectedSize = ""
+    selectedSize = "",
   ) => {
     const key = getCartItemKey(productId, selectedSize);
 
@@ -120,16 +135,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           return { ...item, cartQuantity: quantity };
         }
         return item;
-      })
+      }),
     );
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    } catch (err) {
+      console.error("Failed to clear cart from localStorage:", err);
+    }
+  };
 
   const totalItems = cart.reduce((sum, item) => sum + item.cartQuantity, 0);
   const subtotalPrice = cart.reduce(
     (sum, item) => sum + Number(item.price || 0) * item.cartQuantity,
-    0
+    0,
   );
 
   return (

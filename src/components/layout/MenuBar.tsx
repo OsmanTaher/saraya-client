@@ -1,104 +1,122 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { X, UtensilsCrossed, Flame } from "lucide-react";
 
 interface MenuBarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const categories = [
-  "مشويات",
-  "سندوتشات",
-  "وجبات",
-  "مقبلات وسلطات",
-  "مشروبات",
+const CATEGORIES = [
+  "المشويات على الفحم",
+  "البيتزا",
+  "الأكل الإيطالي",
+  "الطواجن والأطباق الشرقية",
+  "الوجبات والصواني",
+  "السندوتشات والبرجر",
+  "المأكولات البحرية (سي فود)",
+  "الشوربة",
+  "السلطات والمقبلات الباردة",
+  "المقبلات الساخنة والأطباق الجانبية",
+  "الحلويات",
+  "المشروبات",
 ];
 
 export default function MenuBar({ isOpen, onClose }: MenuBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentCategory = searchParams.get("category");
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
-
-  const handleCategorySelect = (category: string | null) => {
-    if (category) {
-      const encoded = encodeURIComponent(category.trim());
-      router.push(`/?category=${encoded}`);
-    } else {
-      router.push("/");
-    }
-    onClose();
-  };
-
-  const handleOrderSummarySelect = () => {
-    router.push("/#order-summary");
-    onClose();
-  };
+  const currentCategory = searchParams.get("category")?.trim() || null;
 
   if (!isOpen) return null;
 
+  const handleCategorySelect = (category: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (category) {
+      params.set("category", category.trim());
+    } else {
+      params.delete("category");
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `/?${queryString}` : "/");
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 z-40 bg-black/20">
-      <div
-        ref={menuRef}
-        className="absolute   top-14  left-4 sm:left-6 z-50 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in duration-150"
+    <div
+      className="fixed inset-0 z-50 flex justify-start bg-black/50 backdrop-blur-xs animate-in fade-in duration-200"
+      dir="rtl"
+      onClick={onClose}
+    >
+      <aside
+        className="w-72 max-w-[80vw] bg-white h-full shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-right duration-200"
+        onClick={(e) => e.stopPropagation()}
       >
-        <ul className="flex flex-col p-2">
-          <li>
+        <div>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#D55304] text-white flex items-center justify-center shadow-xs">
+                <UtensilsCrossed className="w-4 h-4" />
+              </div>
+              <span className="font-extrabold text-slate-900 text-base">
+                أقسام المنيو
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer"
+              aria-label="إغلاق القائمة"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <nav className="space-y-2">
             <button
               type="button"
               onClick={() => handleCategorySelect(null)}
-              className={`w-full text-right px-4 py-2.5 rounded-xl text-sm transition ${
+              className={`w-full text-right px-4 py-3 rounded-xl font-bold text-sm transition flex items-center justify-between cursor-pointer ${
                 !currentCategory
-                  ? "bg-orange-50 text-[#D55304] font-bold"
-                  : "text-slate-700 hover:bg-slate-50"
+                  ? "bg-[#D55304] text-white shadow-xs"
+                  : "bg-slate-50 hover:bg-orange-50 text-slate-700"
               }`}
             >
-              كل الأقسام
+              <span>كل الوجبات (المنيو الكامل)</span>
+              <Flame className="w-4 h-4" />
             </button>
-          </li>
 
-          {categories.map((cat) => (
-            <li key={cat}>
-              <button
-                type="button"
-                onClick={() => handleCategorySelect(cat)}
-                className={`w-full text-right px-4 py-2.5 rounded-xl text-sm transition ${
-                  currentCategory === cat
-                    ? "bg-orange-50 text-[#D55304] font-bold"
-                    : "text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                {cat}
-              </button>
-            </li>
-          ))}
-          <li>
-            <button
-              type="button"
-              onClick={handleOrderSummarySelect}
-              className="w-full text-right px-4 py-2.5 rounded-xl text-sm text-slate-700 hover:bg-slate-50 transition"
-            >
-              ملخص الطلب
-            </button>
-          </li>
-        </ul>
-      </div>
+            {CATEGORIES.map((category) => {
+              const isActive = currentCategory === category;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => handleCategorySelect(category)}
+                  className={`w-full text-right px-4 py-3 rounded-xl font-bold text-sm transition flex items-center justify-between cursor-pointer ${
+                    isActive
+                      ? "bg-[#D55304] text-white shadow-xs"
+                      : "bg-slate-50 hover:bg-orange-50 text-slate-700"
+                  }`}
+                >
+                  <span>{category}</span>
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isActive ? "bg-white" : "bg-[#D55304]/40"
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="border-t border-slate-100 pt-4 text-center text-xs text-slate-400 font-medium">
+          مطعم السرايا — أشهى المأكولات
+        </div>
+      </aside>
     </div>
   );
 }

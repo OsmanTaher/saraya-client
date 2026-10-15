@@ -16,6 +16,7 @@ export interface Product {
 }
 
 export interface CartItem extends Product {
+  cartItemId: string;
   cartQuantity: number;
   selectedSize?: string;
   effectivePrice: number; // السعر الفعلي (حسب الحجم المختار أو السعر الأساسي)

@@ -1,16 +1,16 @@
 function Footer() {
   return (
-    <footer className="bg-indigo-950 text-indigo-200 text-center py-6 border-t border-indigo-900 text-xs">
+    <footer className="bg-[#1C110A] text-orange-100/90 text-center py-6 border-t border-[#D55304]/30 text-xs">
       <div
         dir="ltr"
-        className="font-mono text-xs md:text-sm flex items-center justify-center gap-2 flex-wrap text-indigo-200"
+        className="font-mono text-xs md:text-sm flex items-center justify-center gap-2 flex-wrap text-orange-100/90"
       >
         <span>&lt; Developed By &gt;</span>
         <a
           href="https://aswany.me/"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-2 py-1 md:px-3 md:py-1 rounded-md font-bold transition-all hover:scale-105 bg-amber-300 text-indigo-950 hover:bg-amber-200"
+          className="px-2.5 py-1 md:px-3 md:py-1 rounded-md font-bold transition-all hover:scale-105 bg-[#D55304] text-white hover:bg-[#b84403] shadow-xs"
         >
           Osman
         </a>

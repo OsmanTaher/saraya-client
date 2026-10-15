@@ -45,7 +45,6 @@ export default function Header() {
 
     if (clickCount.current === 1) {
       window.scrollTo({ top: 0, behavior: "smooth" });
-      router.push("/");
     }
 
     if (clickCount.current >= 3) {

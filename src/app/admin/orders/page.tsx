@@ -41,7 +41,6 @@ export default function AdminOrdersPage() {
   };
 
   useEffect(() => {
-    // Fetching orders synchronizes component state with the API.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps

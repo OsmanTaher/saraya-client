@@ -14,21 +14,21 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
   const [selectedSize, setSelectedSize] = useState<string>(
-    hasSizes ? product.sizes![0].name : ""
+    hasSizes ? product.sizes![0].name : "",
   );
 
-  // تحديد سعر الوجبة بناءً على الحجم المختار حالياً
   const activePrice = hasSizes
-    ? product.sizes!.find((s) => s.name === selectedSize)?.price ?? product.price
+    ? (product.sizes!.find((s) => s.name === selectedSize)?.price ??
+      product.price)
     : product.price;
 
   const oldPrice = product.oldPrice ? Number(product.oldPrice) : undefined;
 
-  // البحث عن الكمية المضافة في السلة لهذا المنتج بهذا الحجم تحديداً
   const itemKey = getCartItemKey(product._id, selectedSize);
   const cartItem = cart.find(
     (item) =>
-      (item.cartItemId || getCartItemKey(item._id, item.selectedSize)) === itemKey
+      (item.cartItemId || getCartItemKey(item._id, item.selectedSize)) ===
+      itemKey,
   );
   const currentQty = cartItem ? cartItem.cartQuantity : 0;
 
@@ -56,7 +56,6 @@ export default function ProductCard({ product }: { product: Product }) {
           <ProductImageBadge
             image={product.image}
             name={product.name}
-            // category={product.category}
             price={activePrice}
             oldPrice={oldPrice}
             onZoom={() => setIsZoomed(true)}

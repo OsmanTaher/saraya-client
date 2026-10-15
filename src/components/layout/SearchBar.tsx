@@ -1,6 +1,5 @@
 "use client";
 
-/* Search results contain user-provided external image URLs. */
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useRef } from "react";
@@ -95,11 +94,11 @@ export default function SearchBar() {
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
 
-      targetElement.classList.add("ring-4", "ring-indigo-500", "ring-offset-2");
+      targetElement.classList.add("ring-4", "ring-orange-500", "ring-offset-2");
       setTimeout(() => {
         targetElement.classList.remove(
           "ring-4",
-          "ring-indigo-500",
+          "ring-orange-500",
           "ring-offset-2",
         );
       }, 2000);
@@ -126,8 +125,8 @@ export default function SearchBar() {
 
       {isOpen && (
         <div className="absolute top-14 left-0 z-50 w-72 sm:w-84 bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 text-slate-800 animate-in fade-in zoom-in duration-150">
-          <div className="relative flex items-center border-2 border-indigo-500/80 rounded-2xl px-3 py-2 bg-white">
-            <Search size={18} className="text-indigo-600 shrink-0 ml-2" />
+          <div className="relative flex items-center border-2 border-orange-500/80 rounded-2xl px-3 py-2 bg-white">
+            <Search size={18} className="text-orange-600 shrink-0 ml-2" />
             <input
               ref={inputRef}
               type="text"
@@ -154,7 +153,7 @@ export default function SearchBar() {
                   key={product._id}
                   type="button"
                   onClick={() => handleSelectProduct(product)}
-                  className="w-full text-right flex items-center gap-3 p-2 rounded-xl hover:bg-indigo-50/70 transition-colors group"
+                  className="w-full text-right flex items-center gap-3 p-2 rounded-xl hover:bg-orange-50/70 transition-colors group"
                 >
                   <img
                     src={product.image}
@@ -166,7 +165,7 @@ export default function SearchBar() {
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-slate-800 group-hover:text-indigo-600 truncate transition-colors">
+                    <p className="text-xs sm:text-sm font-medium text-slate-800 group-hover:text-orange-600 truncate transition-colors">
                       {product.name}
                     </p>
                     <span className="text-[10px] text-slate-400 block">

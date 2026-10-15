@@ -39,7 +39,6 @@ export default function PrintsPage() {
   };
 
   useEffect(() => {
-    // Fetching orders synchronizes printable data with the API.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
