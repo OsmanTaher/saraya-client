@@ -1,36 +1,61 @@
 "use client";
 
+import { Product } from "@/src/types";
+import ProductForm from "./ProductForm";
 import { X } from "lucide-react";
-import ProductForm from "@/src/components/admin/products/ProductForm";
-import { AdminProduct } from "./ProductsTable";
 
 interface ProductFormModalProps {
   isOpen: boolean;
-  productToEdit: AdminProduct | null;
+  editingProduct: Product | null;
   onClose: () => void;
-  onSuccess: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubmit: (payload: Record<string, any>) => Promise<void>;
 }
 
 export default function ProductFormModal({
   isOpen,
-  productToEdit,
+  editingProduct,
   onClose,
-  onSuccess,
+  onSubmit,
 }: ProductFormModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar relative">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute left-5 top-5 text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in duration-150"
+      dir="rtl"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl relative max-h-[92vh] overflow-y-auto custom-scrollbar"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between mb-5">
+          <div className="text-right">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+              {editingProduct ? "تعديل بيانات الوجبة" : "إضافة وجبة جديدة"}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+              {editingProduct
+                ? "تعديل تفاصيل وأحجام وأسعار الوجبة في المنيو"
+                : "إضافة صنف جديد لقائمة طعام مطعم السرايا"}
+            </p>
+          </div>
 
-        <ProductForm productToEdit={productToEdit} onSuccess={onSuccess} />
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <ProductForm
+          initialData={editingProduct}
+          onSubmit={onSubmit}
+          onCancel={onClose}
+        />
       </div>
     </div>
   );

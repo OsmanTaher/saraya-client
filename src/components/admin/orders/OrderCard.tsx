@@ -98,7 +98,7 @@ export default function OrderCard({
       return (
         <span className="inline-flex items-center gap-1.5 text-slate-600 font-bold truncate max-w-full">
           <ShoppingBag className="w-3.5 h-3.5 text-[#D55304] shrink-0" />
-          <span className="truncate">طلبات خارجية (استلام من المطعم)</span>
+          <span className="truncate">استلام من المطعم</span>
         </span>
       );
     }

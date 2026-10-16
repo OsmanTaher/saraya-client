@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { getAdminToken, removeAdminToken } from "@/src/lib/cookies";
@@ -15,6 +16,9 @@ import {
   Printer,
   Calculator,
   Store,
+  Power,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 
 const ADMIN_NAV_LINKS = [
@@ -35,7 +39,7 @@ const ADMIN_NAV_LINKS = [
   },
   {
     href: "/admin/orders-summary",
-    label: "ملخص تحضيرات المطبخ",
+    label: "ملخص طلبات اليوم",
     icon: BarChart3,
   },
   {
@@ -56,6 +60,24 @@ export default function AdminLayout({
   const [checking, setChecking] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const [isStoreOpen, setIsStoreOpen] = useState(true);
+  const [togglingStore, setTogglingStore] = useState(false);
+  const [clearingOrders, setClearingOrders] = useState(false);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+  const fetchStoreStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`${apiUrl}/admin/store-status`);
+      if (res.ok) {
+        const data = await res.json();
+        setIsStoreOpen(Boolean(data.isStoreOpen));
+      }
+    } catch (err) {
+      console.error("Failed to fetch store status:", err);
+    }
+  }, [apiUrl]);
+
   useEffect(() => {
     const token = getAdminToken();
 
@@ -63,7 +85,6 @@ export default function AdminLayout({
       if (token) {
         router.replace("/admin/orders");
       } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAuthorized(true);
         setChecking(false);
       }
@@ -75,13 +96,76 @@ export default function AdminLayout({
     } else {
       setAuthorized(true);
       setChecking(false);
+      fetchStoreStatus();
     }
-  }, [pathname, router]);
+  }, [pathname, router, fetchStoreStatus]);
 
   const handleLogout = () => {
     removeAdminToken();
     setDrawerOpen(false);
     router.replace("/");
+  };
+
+    const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // تبديل فتح / إغلاق الموقع للعملاء
+  const handleToggleStore = async () => {
+    setTogglingStore(true);
+    try {
+      const token = getAdminToken();
+      const res = await fetch(`${apiUrl}/admin/store-status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isStoreOpen: !isStoreOpen }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setIsStoreOpen(Boolean(data.isStoreOpen));
+      }
+    } catch (err) {
+      console.error("Error toggling store status:", err);
+    } finally {
+      setTogglingStore(false);
+    }
+  };
+
+  // مسح جميع الطلبات وتنظيف جروب التلجرام لليوم الجديد
+  const handleClearAllOrders = async () => {
+    const confirmed = window.confirm(
+      "تحذير هام: هل أنت متأكد من حذف جميع طلبات اليوم ومسح رسائل جروب التلجرام لبدء يوم جديد؟",
+    );
+    if (!confirmed) return;
+
+    setClearingOrders(true);
+    try {
+      const token = getAdminToken();
+      const res = await fetch(`${apiUrl}/orders/clear-all`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || "تم مسح جميع الطلبات وجروب التلجرام بنجاح!");
+        setDrawerOpen(false);
+        window.location.reload();
+      } else {
+        alert(data.message || "تعذر مسح الطلبات");
+      }
+    } catch {
+      alert("حدث خطأ أثناء الاتصال بالسيرفر");
+    } finally {
+      setClearingOrders(false);
+    }
   };
 
   if (checking || !authorized) {
@@ -92,35 +176,35 @@ export default function AdminLayout({
     );
   }
 
-  // صفحة تسجيل الدخول (/admin) أو صفحة الكاشير (/admin/cashier التي تستخدم هيدر ومنيو الصفحة الرئيسية)
   if (pathname === "/admin") {
     return <>{children}</>;
   }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col" dir="rtl">
-      {/* شريط التنقل العلوي الخاص بصفحات الأدمن (/admin/orders وغيرها) */}
       <header className="sticky top-0 z-40 bg-[#D55304] text-white shadow-md print:hidden">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          {/* يمين الهيدر: الشعار واسم لوحة التحكم */}
-          <Link href="/admin/orders" className="flex items-center gap-3">
+          <Link href="/admin/orders" className="flex items-center gap-3" onClick={handleLogoClick}>
             <img
               src="/logo.png"
               alt="مطعم السرايا"
-              className="w-10 h-10 rounded-xl bg-white p-1 object-contain shadow-xs"
+              className="w-10 h-10 rounded-xl bg-white p-0.5 object-contain shadow-xs"
             />
-            <div className="leading-tight">
+            <div className="leading-tight text-right">
               <h1 className="font-black text-base sm:text-lg">مطعم السرايا</h1>
               <p className="text-[11px] text-orange-100 font-medium">
-                لوحة تحكم المشرف وإدارة المطبخ
+                نظام إدارة المطبخ والكاشير
               </p>
             </div>
           </Link>
 
-          
-
-          {/* يسار الهيدر: أزرار القائمة وتسجيل الخروج */}
           <div className="flex items-center gap-2">
+            {!isStoreOpen && (
+              <span className="bg-rose-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full animate-pulse">
+                مغلق
+              </span>
+            )}
+
             <button
               type="button"
               onClick={handleLogout}
@@ -149,7 +233,7 @@ export default function AdminLayout({
           onClick={() => setDrawerOpen(false)}
         >
           <aside
-            className="w-72 max-w-[80vw] bg-white h-full shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-right duration-200"
+            className="w-72 max-w-[82vw] bg-white h-full shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-right duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div>
@@ -210,14 +294,56 @@ export default function AdminLayout({
               </nav>
             </div>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-extrabold text-xs sm:text-sm transition cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>تسجيل الخروج</span>
-            </button>
+            {/* الأزرار الثلاثة أسفل القائمة الجانبية: إغلاق الموقع + مسح الطلبات + تسجيل الخروج */}
+            <div className="space-y-2.5 pt-4 border-t border-slate-100">
+              {/* 1. زر إغلاق / فتح الموقع */}
+              <button
+                type="button"
+                disabled={togglingStore}
+                onClick={handleToggleStore}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition cursor-pointer border ${
+                  isStoreOpen
+                    ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200"
+                    : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
+                }`}
+              >
+                {togglingStore ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Power className="w-4 h-4" />
+                )}
+                <span>
+                  {isStoreOpen
+                    ? "إغلاق الموقع (المطعم مفتوح)"
+                    : "فتح الموقع (المطعم مغلق)"}
+                </span>
+              </button>
+
+              {/* 2. زر مسح الطلبات وتنظيف التلجرام */}
+              <button
+                type="button"
+                disabled={clearingOrders}
+                onClick={handleClearAllOrders}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-100 hover:bg-rose-600 hover:text-white text-slate-700 font-extrabold text-xs sm:text-sm transition cursor-pointer"
+              >
+                {clearingOrders ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                <span>مسح الطلبات</span>
+              </button>
+
+              {/* 3. زر تسجيل الخروج */}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-extrabold text-xs sm:text-sm transition cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>تسجيل الخروج</span>
+              </button>
+            </div>
           </aside>
         </div>
       )}

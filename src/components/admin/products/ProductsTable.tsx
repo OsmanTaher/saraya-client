@@ -1,189 +1,210 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
-import { Edit2, Trash2 } from "lucide-react";
-import ImageModal from "@/src/components/product/ImageModal";
-
-export interface AdminProduct {
-  _id: string;
-  name: string;
-  price: number;
-  oldPrice?: number;
-  category: string;
-  image: string;
-  isActive: boolean;
-}
+import { Product } from "@/src/types";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface ProductsTableProps {
-  products: AdminProduct[];
-  loading: boolean;
-  onToggleActive: (id: string, currentStatus: boolean) => void;
-  onEdit: (product: AdminProduct) => void;
-  onDelete: (id: string) => void;
+  products: Product[];
+  onEdit: (product: Product) => void;
+  onDelete: (productId: string) => void;
+  onToggleAvailability: (product: Product) => void;
+  togglingId?: string | null;
 }
 
 export default function ProductsTable({
   products,
-  loading,
-  onToggleActive,
   onEdit,
   onDelete,
+  onToggleAvailability,
+  togglingId,
 }: ProductsTableProps) {
-  const [zoomedImage, setZoomedImage] = useState<{
-    src: string;
-    alt: string;
-  } | null>(null);
-
-  const handleOpenZoom = (imageSrc: string, imageAlt: string) => {
-    setZoomedImage({ src: imageSrc, alt: imageAlt });
-  };
-
-  const handleCloseZoom = () => {
-    setZoomedImage(null);
-  };
+  if (products.length === 0) {
+    return (
+      <div className="bg-white rounded-3xl border border-slate-200/80 py-16 text-center text-slate-400 font-bold text-sm">
+        لا توجد وجبات مطابقة للعرض في هذا القسم حالياً.
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-right border-collapse text-xs sm:text-sm">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200/80 text-slate-500 text-xs font-bold">
-                <th className="py-3.5 px-3 sm:px-6">المنتج</th>
-                <th className="py-3.5 px-3 sm:px-6">السعر</th>
-                <th className="py-3.5 px-3 sm:px-6 text-center">الحالة</th>
-                <th className="py-3.5 px-3 sm:px-6 text-center">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="py-12 text-center text-slate-400 font-bold"
-                  >
-                    جاري تحميل المنتجات...
-                  </td>
-                </tr>
-              ) : products.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="py-12 text-center text-slate-400 font-bold"
-                  >
-                    لا توجد منتجات مضافة حالياً
-                  </td>
-                </tr>
-              ) : (
-                products.map((product) => {
-                  const hasDiscount =
-                    typeof product.oldPrice === "number" &&
-                    product.oldPrice > 0;
-                  return (
-                    <tr
-                      key={product._id}
-                      className="hover:bg-slate-50/60 transition-colors"
-                    >
-                      <td className="py-3.5 px-3 sm:px-6">
-                        <div className="flex items-center gap-2.5 sm:gap-3">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            onClick={() =>
-                              handleOpenZoom(product.image, product.name)
-                            }
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "https://placehold.co/100x100/e2e8f0/475569?text=صورة";
-                            }}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <span className="font-bold text-slate-900 text-xs sm:text-sm block leading-snug line-clamp-2 sm:line-clamp-1">
-                              {product.name}
-                            </span>
-                            <span className="text-[10px] hidden sm:block text-slate-400 font-medium  mt-0.5">
-                              {product.category}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
+    <div
+      className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-2xs"
+      dir="rtl"
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[780px] text-right border-collapse">
+          <thead>
+            <tr className="bg-[#FFF7ED] border-b border-orange-100/80 text-slate-700 text-xs sm:text-sm font-extrabold">
+              <th className="py-4 px-6 w-[36%]">الوجبة</th>
+              <th className="py-4 px-4 text-center w-[34%]">
+                الأحجام والأسعار
+              </th>
+              <th className="py-4 px-4 text-center w-[16%]">حالة التوفر</th>
+              <th className="py-4 px-6 text-left w-[14%]">الإجراءات</th>
+            </tr>
+          </thead>
 
-                      <td className="py-3.5 px-3 sm:px-6 font-bold text-slate-900 font-mono whitespace-nowrap">
-                        <div className="text-xs sm:text-sm">
-                          {product.price.toFixed(2)} ج
-                        </div>
-                        {hasDiscount && (
-                          <div className="text-[10px] sm:text-[11px] text-slate-400 line-through font-normal">
-                            {product.oldPrice} ج
-                          </div>
-                        )}
-                      </td>
+          <tbody className="divide-y divide-slate-100">
+            {products.map((product) => {
+              const isAvailable = product.isActive !== false;
+              const isToggling = togglingId === product._id;
+              const hasSizes =
+                Array.isArray(product.sizes) && product.sizes.length > 0;
 
-                      <td className="py-3.5 px-3 sm:px-6 text-center whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5 sm:gap-2">
-                          <span
-                            className={`text-[11px] sm:text-xs font-bold ${
-                              product.isActive
-                                ? "text-emerald-600"
-                                : "text-slate-400"
-                            }`}
-                          >
-                            {product.isActive ? "نشط" : "معطل"}
-                          </span>
-                          <label className="relative inline-flex cursor-pointer items-center">
-                            <input
-                              type="checkbox"
-                              checked={product.isActive}
-                              onChange={() =>
-                                onToggleActive(product._id, product.isActive)
+              return (
+                <tr
+                  key={product._id}
+                  className={`transition-colors hover:bg-orange-50/20 ${
+                    !isAvailable ? "bg-slate-50/60" : ""
+                  }`}
+                >
+                  {/* 1. عمود الوجبة (الصورة + الاسم + الوصف) */}
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={
+                          product.image ||
+                          "https://placehold.co/120x90/fff7ed/D55304?text=?"
+                        }
+                        alt={product.name}
+                        className="w-20 h-14 sm:w-24 sm:h-16 rounded-2xl object-cover border border-slate-200/80 shrink-0 bg-orange-50/50 shadow-2xs"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "https://placehold.co/120x90/fff7ed/D55304?text=?";
+                        }}
+                      />
+                      <div className="min-w-0 space-y-1">
+                        <h3 className="font-black text-slate-900 text-sm sm:text-base truncate">
+                          {product.name}
+                        </h3>
+                        <p className="text-xs text-slate-400 font-medium line-clamp-1">
+                          {product.description || product.category}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* 2. عمود الأحجام والأسعار */}
+                  <td className="py-4 px-4">
+                    <div className="flex items-center justify-center">
+                      {hasSizes ? (
+                        <div className="grid grid-cols-3 gap-2.5 w-max">
+                          {(["صغير", "وسط", "كبير"] as const).map(
+                            (sizeName) => {
+                              // البحث عن الحجم الحالي داخل مصفوفة أحجام المنتج
+                              const sz = product.sizes?.find(
+                                (s) => s.name?.trim() === sizeName,
+                              );
+
+                              // إذا لم يكن الحجم موجوداً، نحجز مكانه بعنصر فارغ بنفس العرض للحفاظ على المحاذاة
+                              if (!sz) {
+                                return (
+                                  <div key={sizeName} className="w-[88px]" />
+                                );
                               }
-                              className="peer sr-only"
-                            />
-                            <span className="h-5 w-9 rounded-full bg-slate-200 transition-colors peer-checked:bg-emerald-600"></span>
-                            <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4"></span>
-                          </label>
-                        </div>
-                      </td>
 
-                      <td className="py-3.5 px-3 sm:px-6 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1 sm:gap-2">
-                          <button
-                            type="button"
-                            onClick={() => onEdit(product)}
-                            className="p-1.5 sm:p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
-                            title="تعديل"
-                            aria-label={`تعديل ${product.name}`}
-                          >
-                            <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onDelete(product._id)}
-                            className="p-1.5 sm:p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
-                            title="حذف"
-                            aria-label={`حذف ${product.name}`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          </button>
+                              return (
+                                <div
+                                  key={sizeName}
+                                  className="bg-[#FFF7ED]/90 border border-orange-100 rounded-2xl px-3 py-2 text-center w-[88px]"
+                                >
+                                  <span className="block text-[11px] font-bold text-slate-500 mb-0.5">
+                                    {sz.name}
+                                  </span>
+                                  <span className="block text-xs sm:text-sm font-black text-slate-900">
+                                    {Number(sz.price).toFixed(2)} ج.م
+                                  </span>
+                                  {/* إظهار السعر القديم تحت الحجم الصغير إذا وُجد خصم */}
+                                  {sizeName === "صغير" && product.oldPrice ? (
+                                    <span className="block text-[10px] text-slate-400 line-through">
+                                      {Number(product.oldPrice).toFixed(2)} ج.م
+                                    </span>
+                                  ) : null}
+                                </div>
+                              );
+                            },
+                          )}
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                      ) : (
+                        <div className="bg-[#FFF7ED]/90 border border-orange-100 rounded-2xl px-4 py-2 text-center min-w-[95px]">
+                          <span className="block text-[11px] font-bold text-slate-500 mb-0.5">
+                            عادي
+                          </span>
+                          <span className="block text-xs sm:text-sm font-black text-slate-900">
+                            {Number(product.price).toFixed(2)} ج.م
+                          </span>
+                          {product.oldPrice ? (
+                            <span className="block text-[10px] text-slate-400 line-through">
+                              {Number(product.oldPrice).toFixed(2)} ج.م
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* 3. عمود حالة التوفر (متوفر للطلب / نفد مؤقتاً) */}
+                  <td className="py-4 px-4 text-center">
+                    <div className="inline-flex items-center justify-center gap-2.5">
+                      <button
+                        type="button"
+                        disabled={isToggling}
+                        onClick={() => onToggleAvailability(product)}
+                        className={`w-12 h-6 rounded-full relative transition-colors cursor-pointer disabled:opacity-50 ${
+                          isAvailable ? "bg-emerald-600" : "bg-amber-500"
+                        }`}
+                        title={
+                          isAvailable
+                            ? "اضغط لإيقاف الوجبة مؤقتاً"
+                            : "اضغط لتفعيل الوجبة"
+                        }
+                      >
+                        <span
+                          className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-xs transition-all ${
+                            isAvailable ? "left-0.5" : "right-0.5"
+                          }`}
+                        />
+                      </button>
+
+                      <span
+                        className={`text-xs font-extrabold min-w-[65px] text-right ${
+                          isAvailable ? "text-emerald-600" : "text-amber-600"
+                        }`}
+                      >
+                        {isAvailable ? "متوفر للطلب" : "نفد مؤقتاً"}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* 4. عمود الإجراءات (تعديل + حذف) */}
+                  <td className="py-4 px-6">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(product)}
+                        className="w-9 h-9 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#D55304] flex items-center justify-center transition cursor-pointer"
+                        title="تعديل الوجبة"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onDelete(product._id)}
+                        className="w-9 h-9 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition cursor-pointer"
+                        title="حذف الوجبة"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-
-      <ImageModal
-        isOpen={Boolean(zoomedImage)}
-        imageSrc={zoomedImage?.src || ""}
-        imageAlt={zoomedImage?.alt || ""}
-        onClose={handleCloseZoom}
-      />
-    </>
+    </div>
   );
 }

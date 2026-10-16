@@ -3,7 +3,6 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Header from "@/src/components/layout/Header";
 import ProductCard from "@/src/components/product/ProductCard";
 import { useCart, getCartItemKey } from "@/src/context/CartContext";
 import { Product } from "@/src/types";
@@ -20,6 +19,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ShoppingCart,
+  FileText,
 } from "lucide-react";
 
 const CATEGORY_ORDER = [
@@ -61,15 +61,16 @@ function CashierContent() {
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   const [paymentMode, setPaymentMode] = useState<"cash" | "card" | "instapay">(
-    "cash"
+    "cash",
   );
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
 
   // بيانات آخر إيصال للطباعة الحرارية 80mm
   const [lastReceipt, setLastReceipt] = useState<PrintedOrderSnapshot | null>(
-    null
+    null,
   );
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -99,7 +100,7 @@ function CashierContent() {
     new Set([
       ...CATEGORY_ORDER,
       ...displayedProducts.map((p) => p.category?.trim()),
-    ])
+    ]),
   )
     .filter((cat): cat is string => Boolean(cat))
     .map((cat) => ({
@@ -153,8 +154,8 @@ function CashierContent() {
             paymentMode === "card"
               ? "دفع بطاقة / فيزا للكاشير"
               : paymentMode === "instapay"
-              ? "تحويل فوري للكاشير"
-              : "نقدي للكاشير",
+                ? "تحويل فوري للكاشير"
+                : "نقدي للكاشير",
           items: snapshotItems,
         }),
       });
@@ -173,7 +174,9 @@ function CashierContent() {
       };
 
       setLastReceipt(receiptData);
-      setSuccessMsg(`تم تسجيل الطلب #${receiptData.orderNumber} وإرساله للمطبخ`);
+      setSuccessMsg(
+        `تم تسجيل الطلب #${receiptData.orderNumber} وإرساله للمطبخ`,
+      );
       clearCart();
 
       // فتح نافذة الطباعة الحرارية بعد تحديث DOM البون مباشرة
@@ -182,7 +185,7 @@ function CashierContent() {
       }, 150);
     } catch (err: unknown) {
       setErrorMsg(
-        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر"
+        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر",
       );
     } finally {
       setSubmitting(false);
@@ -193,8 +196,6 @@ function CashierContent() {
     <>
       {/* شاشة الكاشير التفاعلية (تختفي أثناء الطباعة ليظهر البون الحراري فقط) */}
       <div className="min-h-screen bg-slate-50 print:hidden" dir="rtl">
-        
-
         <main className="container mx-auto px-4 py-4">
           {/* شريط أزرار الأقسام السريع للكاشير كما في الصورة */}
           <div className="mb-5 flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
@@ -341,7 +342,7 @@ function CashierContent() {
                                   updateQuantity(
                                     item._id,
                                     item.cartQuantity + 1,
-                                    item.selectedSize
+                                    item.selectedSize,
                                   )
                                 }
                                 className="w-5 h-5 rounded bg-[#D55304] text-white text-xs font-bold flex items-center justify-center cursor-pointer"
@@ -357,7 +358,7 @@ function CashierContent() {
                                   updateQuantity(
                                     item._id,
                                     item.cartQuantity - 1,
-                                    item.selectedSize
+                                    item.selectedSize,
                                   )
                                 }
                                 className="w-5 h-5 rounded bg-white border border-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center cursor-pointer"
@@ -388,20 +389,24 @@ function CashierContent() {
                 </div>
 
                 {/* تفاصيل الحساب */}
-                <div className="bg-slate-50/90 rounded-2xl p-4 space-y-2.5 border border-slate-100 text-xs sm:text-sm">
-                  <div className="flex justify-between text-slate-600">
-                    {/* <span>مجموع الوجبات:</span>
-                    <span className="font-extrabold text-slate-800">
-                      {totalPrice.toFixed(2)} ج.م
-                    </span>
+                <div className="bg-slate-50/90 rounded-2xl p-4 space-y-3 border border-slate-100 text-xs sm:text-sm">
+                  {/* حقل الملاحظات الإضافية */}
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-1.5 font-bold text-slate-700 text-xs sm:text-sm">
+                      <FileText className="w-4 h-4 text-slate-500" />
+                      <span>ملاحظات إضافية (اختياري)</span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="مثال: بدون بصل، صوص إضافي ..."
+                      className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#D55304] focus:ring-2 focus:ring-[#D55304]/15 transition-all resize-none text-right"
+                    />
                   </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>الضريبة / الخدمة:</span>
-                    <span className="font-extrabold text-slate-800">
-                      0.00 ج.م
-                    </span> */}
-                  </div>
-                  <div className="bg-orange-50/90 border border-[#D55304]/20 rounded-xl p-3 flex justify-between items-center pt-3">
+
+                  {/* الإجمالي النهائي */}
+                  <div className="bg-orange-50/90 border border-[#D55304]/20 rounded-xl p-3 flex justify-between items-center">
                     <span className="font-extrabold text-[#D55304] text-sm sm:text-base flex items-center gap-1.5">
                       <Wallet className="w-4 h-4" />
                       <span>الإجمالي النهائي:</span>
@@ -526,7 +531,10 @@ function CashierContent() {
             </thead>
             <tbody>
               {lastReceipt.items.map((item, idx) => (
-                <tr key={idx} className="border-b border-dotted border-gray-400">
+                <tr
+                  key={idx}
+                  className="border-b border-dotted border-gray-400"
+                >
                   <td className="py-1 font-bold">
                     {item.name} {item.size ? `(${item.size})` : ""}
                   </td>
@@ -550,8 +558,8 @@ function CashierContent() {
                 {lastReceipt.paymentMethod === "cash"
                   ? "كاش (مدفوع)"
                   : lastReceipt.paymentMethod === "card"
-                  ? "فيزا / بطاقة (مدفوع)"
-                  : "إنستاباي / محفظة (مدفوع)"}
+                    ? "فيزا / بطاقة (مدفوع)"
+                    : "إنستاباي / محفظة (مدفوع)"}
               </span>
             </div>
           </div>

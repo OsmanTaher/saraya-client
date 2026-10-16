@@ -102,9 +102,10 @@ export default function SearchBar() {
           "ring-offset-2",
         );
       }, 2000);
-    } else {
-      router.push(`/?search=${encodeURIComponent(product.name)}`);
-    }
+    } 
+    // else {
+    //   router.push(`/?search=${encodeURIComponent(product.name)}`);
+    // }
   };
 
   return (

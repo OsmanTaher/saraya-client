@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/src/context/CartContext";
 import { Receipt, X } from "lucide-react";
@@ -44,6 +44,21 @@ function CheckoutFormContent() {
   const totalPrice = Number(subtotalPrice || 0);
   const deliveryFee = isDineIn || isPickup ? 0 : DELIVERY_FEE;
   const finalTotal = totalPrice + deliveryFee;
+
+  const [isStoreOpen, setIsStoreOpen] = useState(true);
+
+  useEffect(() => {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    fetch(`${apiUrl}/admin/store-status`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (typeof d.isStoreOpen === "boolean") {
+          setIsStoreOpen(d.isStoreOpen);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const resetFormFields = () => {
     clearCart();
@@ -177,6 +192,18 @@ function CheckoutFormContent() {
           </h3>
         </div>
 
+        {!isStoreOpen && (
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-right space-y-1">
+            <p className="text-xs sm:text-sm font-black text-rose-700">
+              🔴 المطعم مغلق حالياً
+            </p>
+            <p className="text-xs text-rose-600 font-medium">
+              عذراً، لا يمكن إرسال طلبات جديدة في وقت إغلاق المطعم. <br /> مواعيد العمل
+              يومياً من 12:00 ظهراً وحتى 1:00 صباحاً.
+            </p>
+          </div>
+        )}
+
         <CartItemList onZoomImage={setZoomedImage} />
 
         <OrderPricingSummary
@@ -205,7 +232,7 @@ function CheckoutFormContent() {
           setTransferNumber={setTransferNumber}
           loading={loading}
           error={error}
-          isCartEmpty={cart.length === 0}
+          isCartEmpty={cart.length === 0 || !isStoreOpen}
           onSubmit={handleSubmit}
         />
       </div>

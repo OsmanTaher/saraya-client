@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   User,
   Phone,
@@ -67,7 +67,12 @@ export default function CustomerInfoForm({
   onSubmit,
 }: CustomerInfoFormProps) {
   const isDineIn = Boolean(tableNumber);
-
+// مزامنة رقم التحويل مع رقم الهاتف تلقائياً إذا لم يقم العميل بكتابة رقم مختلف
+useEffect(() => {
+  if (phone) {
+    setTransferNumber(phone);
+  }
+}, [phone]);
   return (
     <form onSubmit={onSubmit} className="space-y-4 pt-1" dir="rtl">
       {error && (
@@ -330,6 +335,7 @@ export default function CustomerInfoForm({
             <input
               type="tel"
               required
+              // value={phone}
               value={transferNumber}
               minLength={11}
               maxLength={11}
