@@ -379,7 +379,7 @@ export default function OrderCard({
             <Check className="w-4 h-4 stroke-[2.5]" />
             <span>
               {order.status === "confirmed"
-                ? "تم التأكيد (مكتمل)"
+                ? "تم التأكيد"
                 : "تأكيد وإرسال للمطبخ"}
             </span>
           </button>

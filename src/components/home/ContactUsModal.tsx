@@ -198,6 +198,9 @@ export default function ContactUsModal({
                   </label>
                   <input
                     type="tel"
+                    min={0}
+                    max={11}
+                    inputMode="numeric"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="01xxxxxxxxx"

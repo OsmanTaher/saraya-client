@@ -295,6 +295,7 @@ export default function ProductForm({
               type="number"
               step="1"
               min={0}
+              max={999}
               required
               value={price}
               onChange={(e) => setPrice(e.target.value)}
@@ -316,6 +317,7 @@ export default function ProductForm({
               type="number"
               step="1"
               min={0}
+              max={999}
               value={oldPrice}
               onChange={(e) => setOldPrice(e.target.value)}
               placeholder="80"
@@ -361,6 +363,7 @@ export default function ProductForm({
                     type="number"
                     step="1"
                     min={0}
+                    max={999}
                     value={sizesState[sz].price}
                     onChange={(e) => updateSizePrice(sz, e.target.value)}
                     placeholder={

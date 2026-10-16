@@ -1,6 +1,7 @@
 "use client";
 
 import { MealSize } from "@/src/types";
+import { SizeSelector } from "./SizeDropdown";
 
 interface ProductQuantityControlProps {
   currentQty: number;
@@ -26,29 +27,15 @@ export default function ProductQuantityControl({
       className="px-4 py-3 mt-1 border-t border-slate-100 flex items-center justify-between gap-2"
       dir="rtl"
     >
-      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-        {hasSizes ? (
-          <>
-            <label className="text-xs font-bold text-slate-600 shrink-0">
-              الحجم:
-            </label>
-            <select
-              value={selectedSize}
-              onChange={(e) => onSizeChange?.(e.target.value)}
-              className="w-full max-w-[150px] bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-[#D55304] transition cursor-pointer"
-            >
-              {sizes!.map((s) => (
-                <option key={s.name} value={s.name}>
-                  {s.name} ({Number(s.price).toFixed(2)} ج.م)
-                </option>
-              ))}
-            </select>
-          </>
-        ) : (
-          <span className="text-xs font-medium text-slate-400">حجم موحد</span>
-        )}
-      </div>
+      {/* مكوّن اختيار الحجم المخصص بدلاً من select التقليدية */}
+      <SizeSelector
+        sizes={sizes}
+        selectedSize={selectedSize}
+        onSizeChange={onSizeChange}
+        hasSizes={hasSizes}
+      />
 
+      {/* أزرار التحكم في الكمية */}
       <div className="flex items-center gap-1 bg-slate-50 border border-slate-200/80 rounded-xl p-0.5 shrink-0">
         <button
           type="button"

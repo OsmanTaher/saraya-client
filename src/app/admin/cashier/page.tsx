@@ -119,7 +119,7 @@ function CashierContent() {
     }
   };
 
-  const handlePrintAndSubmit = async () => {
+const handlePrintAndSubmit = async () => {
     setErrorMsg(null);
     setSuccessMsg(null);
 
@@ -143,12 +143,15 @@ function CashierContent() {
         image: item.image,
       }));
 
+      const currentNotes = notes.trim();
+
       const res = await fetch(`${apiUrl}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderType: "cashier",
-          customerName: "عميل كاشير مباشر",
+          notes: currentNotes,
+          customerName: "عميل كاشير",
           paymentMethod: mappedPaymentMethod,
           paymentReceipt:
             paymentMode === "card"
@@ -175,17 +178,18 @@ function CashierContent() {
 
       setLastReceipt(receiptData);
       setSuccessMsg(
-        `تم تسجيل الطلب #${receiptData.orderNumber} وإرساله للمطبخ`,
+        `تم تسجيل الطلب #${receiptData.orderNumber} وإرساله للمطبخ`
       );
       clearCart();
+      setNotes("");
 
-      // فتح نافذة الطباعة الحرارية بعد تحديث DOM البون مباشرة
+      // فتح الطباعة الحرارية بعد تحديث DOM البون مباشرة
       setTimeout(() => {
         window.print();
       }, 150);
     } catch (err: unknown) {
       setErrorMsg(
-        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر",
+        err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالسيرفر"
       );
     } finally {
       setSubmitting(false);
@@ -198,7 +202,7 @@ function CashierContent() {
       <div className="min-h-screen bg-slate-50 print:hidden" dir="rtl">
         <main className="container mx-auto px-4 py-4">
           {/* شريط أزرار الأقسام السريع للكاشير كما في الصورة */}
-          <div className="mb-5 flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+          <div className="mb-5 flex  bg-white items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
             <button
               type="button"
               onClick={() => handleCategoryTabClick(null)}
@@ -493,6 +497,7 @@ function CashierContent() {
                       clearCart();
                       setErrorMsg(null);
                       setSuccessMsg(null);
+                      setNotes("");
                     }}
                     className="w-full bg-white hover:bg-orange-50 text-[#D55304] border border-[#D55304]/40 font-extrabold py-3 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition-all cursor-pointer"
                   >
@@ -507,67 +512,95 @@ function CashierContent() {
       </div>
 
       {/* قالب إيصال الطابعة الحرارية (80mm) - يظهر فقط عند الضغط على طباعة الإيصال */}
+      {/* قالب إيصال الطابعة الحرارية (86mm) بارتفاع ديناميكي وبدون Footer */}
       {lastReceipt && (
-        <div
-          className="hidden print:block w-[78mm] mx-auto p-2 text-black bg-white font-sans text-xs"
-          dir="rtl"
-        >
-          <div className="text-center border-b border-dashed border-black pb-2 mb-2">
-            <h2 className="text-base font-black">مطعم السرايا</h2>
-            <p className="text-[11px]">أشهى المأكولات والمشويات</p>
-            <p className="text-[11px] font-bold mt-1">
-              فاتورة كاشير #{lastReceipt.orderNumber}
-            </p>
-            <p className="text-[10px]">{lastReceipt.createdAt}</p>
-          </div>
+        <>
+          <style jsx global>{`
+            @media print {
+              @page {
+                size: 86mm auto;
+                margin: 0mm !important; /* إبقاء هامش المتصفح 0 لمنع ظهور الرابط والتاريخ */
+              }
+              html,
+              body {
+                width: 86mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+              }
+            }
+          `}</style>
 
-          <table className="w-full text-right border-b border-dashed border-black pb-2 mb-2 text-[11px]">
-            <thead>
-              <tr className="border-b border-black">
-                <th className="py-1">الصنف</th>
-                <th className="py-1 text-center">الكمية</th>
-                <th className="py-1 text-left">الإجمالي</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lastReceipt.items.map((item, idx) => (
-                <tr
-                  key={idx}
-                  className="border-b border-dotted border-gray-400"
-                >
-                  <td className="py-1 font-bold">
-                    {item.name} {item.size ? `(${item.size})` : ""}
-                  </td>
-                  <td className="py-1 text-center">{item.quantity}</td>
-                  <td className="py-1 text-left font-bold">
-                    {(item.price * item.quantity).toFixed(2)}
-                  </td>
+          {/* 1. تم إضافة p-[10mm] و box-border لترك مسافة 10mm من جميع الجوانب الأربعة */}
+          <div
+            className="hidden print:block w-[86mm] max-w-[86mm] mx-auto p-[10mm] box-border text-black bg-white font-sans text-xs"
+            dir="rtl"
+          >
+            {/* ترويسة الإيصال: النص في أعلى اليمين واللوجو في أعلى اليسار */}
+            <div className="flex items-start justify-between border-b border-dashed border-black pb-2 mb-2">
+              {/* يمين: النصوص */}
+              <div className="text-right">
+                <h2 className="text-base font-black leading-tight">مطعم السرايا</h2>
+                <p className="text-[11px]">أشهى المأكولات والمشويات</p>
+                <p className="text-[11px] font-bold mt-1">
+                  فاتورة كاشير #{lastReceipt.orderNumber}
+                </p>
+                <p className="text-[10px]">{lastReceipt.createdAt}</p>
+              </div>
+
+              {/* 2. يسار: اللوجو بحواف rounded-lg وأبيض وأسود (grayscale) */}
+              <img
+                src="/logo.png"
+                alt="مطعم السرايا"
+                className="w-12 h-12 object-contain shrink-0 rounded-lg grayscale contrast-150"
+              />
+            </div>
+
+            <table className="w-full text-right border-b border-dashed border-black pb-2 mb-2 text-[11px]">
+              <thead>
+                <tr className="border-b border-black">
+                  <th className="py-1">الصنف</th>
+                  <th className="py-1 text-center">الكمية</th>
+                  <th className="py-1 text-left">الإجمالي</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {lastReceipt.items.map((item, idx) => (
+                  <tr
+                    key={idx}
+                    className="border-b border-dotted border-gray-400"
+                  >
+                    <td className="py-1 font-bold">
+                      {item.name} {item.size ? `(${item.size})` : ""}
+                    </td>
+                    <td className="py-1 text-center">{item.quantity}</td>
+                    <td className="py-1 text-left font-bold">
+                      {(item.price * item.quantity).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          <div className="space-y-1 text-xs font-bold">
-            <div className="flex justify-between text-sm font-black">
-              <span>الإجمالي المطلوب:</span>
-              <span>{lastReceipt.totalPrice.toFixed(2)} ج.م</span>
-            </div>
-            <div className="flex justify-between text-[11px]">
-              <span>طريقة الدفع:</span>
-              <span>
-                {lastReceipt.paymentMethod === "cash"
-                  ? "كاش (مدفوع)"
-                  : lastReceipt.paymentMethod === "card"
-                    ? "فيزا / بطاقة (مدفوع)"
-                    : "إنستاباي / محفظة (مدفوع)"}
-              </span>
+            <div className="space-y-1 text-xs font-bold pb-1">
+              <div className="flex justify-between text-sm font-black">
+                <span>الإجمالي المطلوب:</span>
+                <span>{lastReceipt.totalPrice.toFixed(2)} ج.م</span>
+              </div>
+              <div className="flex justify-between text-[11px]">
+                <span>طريقة الدفع:</span>
+                <span>
+                  {lastReceipt.paymentMethod === "cash"
+                    ? "كاش (مدفوع)"
+                    : lastReceipt.paymentMethod === "card"
+                      ? "فيزا / بطاقة (مدفوع)"
+                      : "إنستاباي / محفظة (مدفوع)"}
+                </span>
+              </div>
             </div>
           </div>
-
-          <div className="text-center border-t border-dashed border-black mt-3 pt-2 text-[10px]">
-            شكراً لزيارتكم مطعم السرايا — بالهنا والشفا
-          </div>
-        </div>
+        </>
       )}
     </>
   );

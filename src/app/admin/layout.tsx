@@ -13,13 +13,14 @@ import {
   ClipboardList,
   UtensilsCrossed,
   BarChart3,
-  Printer,
   Calculator,
   Store,
   Power,
   Trash2,
   Loader2,
+  MessageCircle,
 } from "lucide-react";
+import SearchBar from "@/src/components/layout/SearchBar";
 
 const ADMIN_NAV_LINKS = [
   {
@@ -41,11 +42,6 @@ const ADMIN_NAV_LINKS = [
     href: "/admin/orders-summary",
     label: "ملخص طلبات اليوم",
     icon: BarChart3,
-  },
-  {
-    href: "/admin/prints",
-    label: "طباعة الفواتير الحرارية",
-    icon: Printer,
   },
 ];
 
@@ -106,7 +102,7 @@ export default function AdminLayout({
     router.replace("/");
   };
 
-    const handleLogoClick = (e: React.MouseEvent) => {
+  const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -184,18 +180,24 @@ export default function AdminLayout({
     <div className="min-h-screen bg-slate-50 flex flex-col" dir="rtl">
       <header className="sticky top-0 z-40 bg-[#D55304] text-white shadow-md print:hidden">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/admin/orders" className="flex items-center gap-3" onClick={handleLogoClick}>
+          <Link
+            href="/admin/orders"
+            className="flex items-center gap-3"
+            onClick={handleLogoClick}
+          >
             <img
               src="/logo.png"
               alt="مطعم السرايا"
               className="w-10 h-10 rounded-xl bg-white p-0.5 object-contain shadow-xs"
             />
-            <div className="leading-tight text-right">
-              <h1 className="font-black text-base sm:text-lg">مطعم السرايا</h1>
-              <p className="text-[11px] text-orange-100 font-medium">
-                نظام إدارة المطبخ والكاشير
-              </p>
-            </div>
+            <div className="text-right">
+            <h1 className="text-lg md:text-xl font-bold leading-tight">
+              مطعم السرايا
+            </h1>
+            <p className="text-xs text-white/80 font-normal">
+              أشهى المأكولات والمشويات
+            </p>
+          </div>
           </Link>
 
           <div className="flex items-center gap-2">
@@ -204,6 +206,8 @@ export default function AdminLayout({
                 مغلق
               </span>
             )}
+
+            {pathname === "/admin/cashier" && <SearchBar />}
 
             <button
               type="button"
@@ -289,6 +293,15 @@ export default function AdminLayout({
                   >
                     <Store className="w-4 h-4 shrink-0 text-[#D55304]" />
                     <span>عرض موقع العميل الرئيسي</span>
+                  </Link>
+                  <Link
+                    href="https://web.telegram.org/a/#-1004380812989"
+                    target="_blank"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition"
+                  >
+                    <MessageCircle className="w-4 h-4 shrink-0 text-[#D55304]" />
+                    <span>جروب التلجرام لطلبات المطبخ</span>
                   </Link>
                 </div>
               </nav>

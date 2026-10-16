@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { CartProvider } from "@/src/context/CartContext";
+import Footer from "../components/layout/Footer";
 
 const tajawal = localFont({
   src: [
@@ -31,8 +32,16 @@ const tajawal = localFont({
 
 export const metadata: Metadata = {
   title: "مطعم السرايا | أشهى المأكولات والمشويات",
-  description: "مطعم السرايا - أشهى المأكولات والمشويات الطازجة. اطلب وجبتك المفضلة بسهولة",
-  keywords: ["مطعم السرايا", "مشويات", "وجبات", "سندوتشات", "مأكولات", "توصيل طعام"],
+  description:
+    "مطعم السرايا - أشهى المأكولات والمشويات الطازجة. اطلب وجبتك المفضلة بسهولة",
+  keywords: [
+    "مطعم السرايا",
+    "مشويات",
+    "وجبات",
+    "سندوتشات",
+    "مأكولات",
+    "توصيل طعام",
+  ],
   metadataBase: new URL("https://saraya-restaurant.vercel.app"),
   alternates: {
     canonical: "/",
@@ -53,7 +62,10 @@ export default function RootLayout({
       <body
         className={`${tajawal.className} bg-lightBg text-gray-800 min-h-screen flex flex-col`}
       >
-        <CartProvider>{children}</CartProvider>
+        <CartProvider>
+          {children}
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

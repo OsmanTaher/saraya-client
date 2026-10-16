@@ -21,6 +21,7 @@ import {
   IceCream,
   CupSoda,
   Loader2,
+  X,
 } from "lucide-react";
 
 const CATEGORY_TABS = [
@@ -28,13 +29,29 @@ const CATEGORY_TABS = [
   { id: "المشويات على الفحم", label: "المشويات على الفحم", icon: Flame },
   { id: "البيتزا", label: "البيتزا", icon: Pizza },
   { id: "الأكل الإيطالي", label: "الأكل الإيطالي", icon: Utensils },
-  { id: "الطواجن والأطباق الشرقية", label: "الطواجن والأطباق الشرقية", icon: CookingPot },
+  {
+    id: "الطواجن والأطباق الشرقية",
+    label: "الطواجن والأطباق الشرقية",
+    icon: CookingPot,
+  },
   { id: "الوجبات والصواني", label: "الوجبات والصواني", icon: UtensilsCrossed },
   { id: "السندوتشات والبرجر", label: "السندوتشات والبرجر", icon: Sandwich },
-  { id: "المأكولات البحرية (سي فود)", label: "المأكولات البحرية (سي فود)", icon: Fish },
+  {
+    id: "المأكولات البحرية (سي فود)",
+    label: "المأكولات البحرية (سي فود)",
+    icon: Fish,
+  },
   { id: "الشوربة", label: "الشوربة", icon: Soup },
-  { id: "السلطات والمقبلات الباردة", label: "السلطات والمقبلات الباردة", icon: Salad },
-  { id: "المقبلات الساخنة والأطباق الجانبية", label: "المقبلات الساخنة والأطباق الجانبية", icon: Croissant },
+  {
+    id: "السلطات والمقبلات الباردة",
+    label: "السلطات والمقبلات الباردة",
+    icon: Salad,
+  },
+  {
+    id: "المقبلات الساخنة والأطباق الجانبية",
+    label: "المقبلات الساخنة والأطباق الجانبية",
+    icon: Croissant,
+  },
   { id: "الحلويات", label: "الحلويات", icon: IceCream },
   { id: "المشروبات", label: "المشروبات", icon: CupSoda },
 ];
@@ -96,7 +113,7 @@ export default function AdminProductsPage() {
 
     if (isEditing) {
       setProducts((prev) =>
-        prev.map((p) => (p._id === editingProduct!._id ? data : p))
+        prev.map((p) => (p._id === editingProduct!._id ? data : p)),
       );
     } else {
       setProducts((prev) => [data, ...prev]);
@@ -125,7 +142,7 @@ export default function AdminProductsPage() {
       if (res.ok) {
         const updated = await res.json();
         setProducts((prev) =>
-          prev.map((p) => (p._id === product._id ? updated : p))
+          prev.map((p) => (p._id === product._id ? updated : p)),
         );
       }
     } catch (err) {
@@ -213,16 +230,30 @@ export default function AdminProductsPage() {
 
         {/* حقل البحث عن وجبة */}
         <div className="relative w-full lg:w-72 shrink-0">
+          {/* أيقونة البحث في اليمين */}
           <span className="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
             <Search className="w-4 h-4" />
           </span>
+
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ابحث عن وجبة أو صنف..."
-            className="w-full bg-white border border-slate-200/90 rounded-2xl py-2.5 pr-10 pl-4 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#D55304] transition"
+            className="w-full bg-white border border-slate-200/90 rounded-2xl py-2.5 pr-10 pl-9 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#D55304] transition"
           />
+
+          {/* زر مسح البحث (يظهر فقط عند وجود نص) */}
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+              title="مسح البحث"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 

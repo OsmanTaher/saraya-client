@@ -60,13 +60,14 @@ export default function Header() {
 
   return (
     <header
-      className="bg-[#D55304] text-white sticky top-0 z-40 shadow-md"
+      className="bg-primary text-white sticky top-0 z-40 shadow-md"
       dir="rtl"
     >
-      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2.5 select-none group">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3 select-none group">
           <div
-            className="relative w-10 h-10 shrink-0 active:scale-95 transition-transform duration-150"
+            className="relative w-10 h-10 shrink-0 active:scale-95 
+            transition-transform duration-150 cursor-pointer"
             onClick={handleLogoClick}
           >
             <Image
@@ -75,7 +76,9 @@ export default function Header() {
               width={40}
               height={40}
               priority
-              className="w-full h-full object-contain cursor-pointer"
+              // className="w-full h-full object-contain cursor-pointer"
+              className="w-10 h-10 rounded-xl object-contain bg-orange-50 p-0.5"
+
             />
           </div>
 
