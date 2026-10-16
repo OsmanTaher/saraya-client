@@ -32,6 +32,7 @@ export interface OrderItem {
 }
 
 export interface Order {
+  adminNote: string;
   _id: string;
   orderNumber: number;
   orderType: 'delivery' | 'dine_in' | 'cashier' | 'pickup';

@@ -3,42 +3,36 @@
 import { Search, X } from "lucide-react";
 
 interface AdminSearchBarProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
+  searchQuery: string;
+  setSearchQuery: (val: string) => void;
 }
 
 export default function AdminSearchBar({
-  value,
-  onChange,
-  placeholder = "بحث...",
-  className = "max-w-sm",
+  searchQuery,
+  setSearchQuery,
 }: AdminSearchBarProps) {
-  const handleClear = () => {
-    onChange("");
-  };
-
   return (
-    <div className={`relative w-full ${className}`}>
-      <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+    <div className="relative w-full max-w-xl" dir="rtl">
+      <span className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+        <Search className="w-4 h-4" />
+      </span>
 
       <input
         type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full pr-10 pl-9 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-indigo-500 shadow-sm transition-colors"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="ابحث باسم العميل أو رقم الهاتف أو رقم الطلب أو رقم الطاولة..."
+        className="w-full bg-white border border-slate-200/90 rounded-full py-3 pr-11 pl-10 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#D55304] focus:ring-2 focus:ring-[#D55304]/15 shadow-2xs transition-all"
       />
 
-      {value.length > 0 && (
+      {searchQuery && (
         <button
           type="button"
-          onClick={handleClear}
-          className="absolute left-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-          aria-label="مسح نص البحث"
+          onClick={() => setSearchQuery("")}
+          className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+          aria-label="مسح البحث"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" />
         </button>
       )}
     </div>

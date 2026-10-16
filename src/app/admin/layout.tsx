@@ -1,26 +1,49 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Tajawal } from "next/font/google";
+import { getAdminToken, removeAdminToken } from "@/src/lib/cookies";
 import {
   Menu,
   X,
-  ShoppingBag,
-  Boxes,
-  Package,
   LogOut,
-  Loader2,
+  ClipboardList,
+  UtensilsCrossed,
+  BarChart3,
   Printer,
+  Calculator,
+  Store,
 } from "lucide-react";
-import { getCookie, deleteCookie } from "@/src/lib/cookies";
 
-const tajawal = Tajawal({
-  subsets: ["arabic"],
-  weight: ["400", "500", "700", "800"],
-});
+const ADMIN_NAV_LINKS = [
+  {
+    href: "/admin/cashier",
+    label: "نقطة بيع الكاشير (POS)",
+    icon: Calculator,
+  },
+  {
+    href: "/admin/orders",
+    label: "سجل وإدارة الطلبات",
+    icon: ClipboardList,
+  },
+  {
+    href: "/admin/products",
+    label: "إدارة المنيو والوجبات",
+    icon: UtensilsCrossed,
+  },
+  {
+    href: "/admin/orders-summary",
+    label: "ملخص تحضيرات المطبخ",
+    icon: BarChart3,
+  },
+  {
+    href: "/admin/prints",
+    label: "طباعة الفواتير الحرارية",
+    icon: Printer,
+  },
+];
 
 export default function AdminLayout({
   children,
@@ -29,243 +52,177 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const [authorized, setAuthorized] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
+    const token = getAdminToken();
+
     if (pathname === "/admin") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsAuthenticated(true);
+      if (token) {
+        router.replace("/admin/orders");
+      } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setAuthorized(true);
+        setChecking(false);
+      }
       return;
     }
-
-    const token = getCookie("toshka_admin_token");
 
     if (!token) {
-      setIsAuthenticated(false);
       router.replace("/admin");
-      return;
+    } else {
+      setAuthorized(true);
+      setChecking(false);
     }
-
-    const verifyToken = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/admin/verify`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.ok) {
-          setIsAuthenticated(true);
-        } else {
-          deleteCookie("toshka_admin_token");
-          setIsAuthenticated(false);
-          router.replace("/admin");
-        }
-      } catch {
-        deleteCookie("toshka_admin_token");
-        setIsAuthenticated(false);
-        router.replace("/admin");
-      }
-    };
-
-    verifyToken();
-  }, [pathname, router, apiUrl]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalScroll =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const currentScroll =
-        window.scrollY || document.documentElement.scrollTop;
-
-      if (totalScroll > 0) {
-        const progress = (currentScroll / totalScroll) * 100;
-        setScrollProgress(Math.min(progress, 100));
-      } else {
-        setScrollProgress(0);
-      }
-    };
-
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsMenuOpen(false);
-  }, [pathname]);
-
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, [pathname, router]);
 
   const handleLogout = () => {
-    deleteCookie("toshka_admin_token");
-    setIsAuthenticated(false);
-    setIsMenuOpen(false);
+    removeAdminToken();
+    setDrawerOpen(false);
     router.replace("/");
   };
 
-  if (isAuthenticated === null && pathname !== "/admin") {
+  if (checking || !authorized) {
     return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3 text-slate-500 font-bold text-sm"
-        dir="rtl"
-      >
-        <Loader2 className="w-8 h-8 text-[#5850EC] animate-spin" />
-        <span>جاري التحقق من صلاحية الدخول...</span>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500 text-sm font-bold">
+        جاري التحقق من الصلاحيات...
       </div>
     );
   }
 
-  if (!isAuthenticated && pathname !== "/admin") return null;
+  // صفحة تسجيل الدخول (/admin) أو صفحة الكاشير (/admin/cashier التي تستخدم هيدر ومنيو الصفحة الرئيسية)
+  if (pathname === "/admin") {
+    return <>{children}</>;
+  }
 
   return (
-    <div
-      className={`${tajawal.className} min-h-screen bg-slate-50 text-slate-800`}
-      dir="rtl"
-    >
-      <header className="bg-[#5850EC] text-white sticky top-0 z-40 shadow-md">
-        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
-          <div
-            className="flex items-center gap-2.5 cursor-pointer select-none group"
-            onClick={handleLogoClick}
-            title="الصعود لأعلى الصفحة"
-          >
-            <div className="relative w-10 h-10 shrink-0 active:scale-95 transition-transform duration-150">
-              <Image
-                src="/icon.png"
-                alt="شعار متجر بيعلي جملة"
-                width={40}
-                height={40}
-                priority
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="text-right">
-              <h1 className="text-lg md:text-xl font-bold leading-tight">
-                متجر بيعلي جملة
-              </h1>
-              <p className="text-xs text-white/80 font-normal">
-                لوحة تحكم المشرف
+    <div className="min-h-screen bg-slate-50 flex flex-col" dir="rtl">
+      {/* شريط التنقل العلوي الخاص بصفحات الأدمن (/admin/orders وغيرها) */}
+      <header className="sticky top-0 z-40 bg-[#D55304] text-white shadow-md print:hidden">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          {/* يمين الهيدر: الشعار واسم لوحة التحكم */}
+          <Link href="/admin/orders" className="flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="مطعم السرايا"
+              className="w-10 h-10 rounded-xl bg-white p-1 object-contain shadow-xs"
+            />
+            <div className="leading-tight">
+              <h1 className="font-black text-base sm:text-lg">مطعم السرايا</h1>
+              <p className="text-[11px] text-orange-100 font-medium">
+                لوحة تحكم المشرف وإدارة المطبخ
               </p>
             </div>
+          </Link>
+
+          
+
+          {/* يسار الهيدر: أزرار القائمة وتسجيل الخروج */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="تسجيل الخروج"
+              className="w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center transition cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              title="القائمة"
+              className="w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center transition cursor-pointer"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
           </div>
-
-          {pathname !== "/admin" && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white transition-all active:scale-95 flex items-center justify-center"
-                title="تسجيل الخروج"
-                aria-label="تسجيل الخروج"
-              >
-                <LogOut size={20} />
-              </button>
-
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className={`p-2.5 rounded-xl transition ${
-                    isMenuOpen ? "bg-white/20" : "bg-white/20 hover:bg-white/30"
-                  }`}
-                  aria-label="Toggle Admin Menu"
-                >
-                  {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                </button>
-
-                {isMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40 bg-black/20"
-                      onClick={() => setIsMenuOpen(false)}
-                    />
-                    <div className="absolute left-0 mt-2.5 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 z-50 text-slate-800 animate-in fade-in zoom-in-95 duration-150">
-                      <nav className="flex flex-col gap-1">
-                        <Link
-                          href="/admin/orders"
-                          onClick={() => setIsMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                            pathname === "/admin/orders"
-                              ? "bg-indigo-50 text-indigo-600"
-                              : "hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                            <ShoppingBag size={16} />
-                          </div>
-                          <span>الطلبات</span>
-                        </Link>
-
-                        <Link
-                          href="/admin/orders-summary"
-                          onClick={() => setIsMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                            pathname === "/admin/orders-summary"
-                              ? "bg-amber-50 text-amber-600"
-                              : "hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                            <Boxes size={16} />
-                          </div>
-                          <span>ملخص الطلبات</span>
-                        </Link>
-
-                        <Link
-                          href="/admin/products"
-                          onClick={() => setIsMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                            pathname === "/admin/products"
-                              ? "bg-emerald-50 text-emerald-600"
-                              : "hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                            <Package size={16} />
-                          </div>
-                          <span>المنتجات</span>
-                        </Link>
-
-                        <Link
-                          href="/admin/prints"
-                          onClick={() => setIsMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                            pathname === "/admin/prints"
-                              ? "bg-amber-50 text-indigo-600"
-                              : "hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-amber-50 text-indigo-600 flex items-center justify-center shrink-0">
-                            <Printer size={16} />
-                          </div>
-                          <span>طباعة</span>
-                        </Link>
-                      </nav>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-
-        <div
-          className="absolute bottom-0 right-0 h-0.75 bg-[#FCD34D] transition-[width] duration-100 ease-out z-50"
-          style={{ width: `${scrollProgress}%` }}
-        />
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">{children}</main>
+      {/* القائمة الجانبية للأدمن */}
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-start print:hidden"
+          onClick={() => setDrawerOpen(false)}
+        >
+          <aside
+            className="w-72 max-w-[80vw] bg-white h-full shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-right duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src="/logo.png"
+                    alt="السرايا"
+                    className="w-9 h-9 rounded-xl object-contain bg-orange-50 p-1"
+                  />
+                  <div>
+                    <h2 className="font-black text-slate-900 text-sm">
+                      إدارة مطعم السرايا
+                    </h2>
+                    <p className="text-[11px] text-slate-400">قائمة المشرف</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <nav className="space-y-1.5">
+                {ADMIN_NAV_LINKS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setDrawerOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm transition ${
+                        isActive
+                          ? "bg-[#D55304] text-white shadow-xs"
+                          : "text-slate-700 hover:bg-orange-50 hover:text-[#D55304]"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+
+                <div className="pt-2 mt-2 border-t border-slate-100">
+                  <Link
+                    href="/"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition"
+                  >
+                    <Store className="w-4 h-4 shrink-0 text-[#D55304]" />
+                    <span>عرض موقع العميل الرئيسي</span>
+                  </Link>
+                </div>
+              </nav>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-extrabold text-xs sm:text-sm transition cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>تسجيل الخروج</span>
+            </button>
+          </aside>
+        </div>
+      )}
+
+      <main className="flex-1 container mx-auto px-4 py-6">{children}</main>
     </div>
   );
 }
