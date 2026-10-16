@@ -3,7 +3,6 @@ import Header from "@/src/components/layout/Header";
 import CheckoutForm from "@/src/components/cart/CheckoutForm";
 import { Product } from "@/src/types";
 import Link from "next/link";
-import Footer from "../components/layout/Footer";
 import QuickServicesBar from "../components/home/QuickServicesBar";
 import { Flame, UtensilsCrossed } from "lucide-react";
 
@@ -132,7 +131,7 @@ export default async function HomePage({
                 {categoriesWithProducts.map((group) => (
                   <section key={group.name}>
                     {categoriesWithProducts.length > 1 && (
-                      <h3 className="mb-3 border-r-4 border-[#D55304] pr-3 text-base font-extrabold text-slate-800">
+                      <h3 className="mb-3 border-r-4 border-primary pr-3 text-base font-extrabold text-slate-800">
                         {group.name}
                       </h3>
                     )}

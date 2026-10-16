@@ -67,7 +67,7 @@ export default function CustomerInfoForm({
   onSubmit,
 }: CustomerInfoFormProps) {
   const isDineIn = Boolean(tableNumber);
-  // مزامنة رقم التحويل مع رقم الهاتف تلقائياً إذا لم يقم العميل بكتابة رقم مختلف
+
   useEffect(() => {
     if (phone) {
       setTransferNumber(phone);
@@ -155,21 +155,20 @@ export default function CustomerInfoForm({
             maxLength={11}
             inputMode="numeric"
             placeholder="01xxxxxxxxx"
-            className="w-full pr-9 pl-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#D55304] transition-all text-left dir-ltr"
+            className="w-full pr-9 pl-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-primary transition-all text-left dir-ltr"
           />
         </div>
       </div>
 
       {!isDineIn && (
         <div className="flex flex-col gap-3 pt-1">
-          {/* أزرار التبديل */}
           <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               onClick={() => setIsPickup(false)}
               className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs transition-all duration-300 cursor-pointer border active:scale-[0.98] ${
                 !isPickup
-                  ? "bg-[#D55304] text-white border-[#D55304] shadow-md shadow-orange-500/20"
+                  ? "bg-primary text-white border-primary shadow-md shadow-orange-500/20"
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
               }`}
             >
@@ -208,7 +207,6 @@ export default function CustomerInfoForm({
             </button>
           </div>
 
-          {/* حقل العنوان بأنيميشن سلاسة فتح وإغلاق (Grid Transition) */}
           <div
             className={`grid transition-all duration-300 ease-in-out ${
               !isPickup
@@ -219,7 +217,7 @@ export default function CustomerInfoForm({
             <div className="overflow-hidden">
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1.5">
                 <span>العنوان التفصيلي</span>
-                <span className="text-[#D55304]">*</span>
+                <span className="text-primary">*</span>
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
@@ -354,7 +352,6 @@ export default function CustomerInfoForm({
             <input
               type="tel"
               required
-              // value={phone}
               value={transferNumber}
               minLength={11}
               maxLength={11}

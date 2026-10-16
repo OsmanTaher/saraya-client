@@ -27,7 +27,6 @@ export default function ProductQuantityControl({
       className="px-4 py-3 mt-1 border-t border-slate-100 flex items-center justify-between gap-2"
       dir="rtl"
     >
-      {/* مكوّن اختيار الحجم المخصص بدلاً من select التقليدية */}
       <SizeSelector
         sizes={sizes}
         selectedSize={selectedSize}
@@ -35,7 +34,6 @@ export default function ProductQuantityControl({
         hasSizes={hasSizes}
       />
 
-      {/* أزرار التحكم في الكمية */}
       <div className="flex items-center gap-1 bg-slate-50 border border-slate-200/80 rounded-xl p-0.5 shrink-0">
         <button
           type="button"

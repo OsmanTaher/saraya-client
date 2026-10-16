@@ -39,7 +39,7 @@ export default function AdminOrdersPage() {
       setOrders(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "حدث خطأ أثناء تحميل الطلبات"
+        err instanceof Error ? err.message : "حدث خطأ أثناء تحميل الطلبات",
       );
     } finally {
       setLoading(false);
@@ -49,15 +49,14 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders();
-    // تحديث تلقائي كل 30 ثانية لمتابعة طلبات المطبخ الجديدة
+
     const interval = setInterval(fetchOrders, 30000);
     return () => clearInterval(interval);
   }, [fetchOrders]);
 
-  // تحديث حالة الطلب (مكتمل / ملغي)
   const handleUpdateStatus = async (
     orderId: string,
-    newStatus: "pending" | "confirmed" | "cancelled"
+    newStatus: "pending" | "confirmed" | "cancelled",
   ) => {
     setUpdatingId(orderId);
     try {
@@ -73,9 +72,7 @@ export default function AdminOrdersPage() {
 
       if (res.ok) {
         const updated = await res.json();
-        setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? updated : o))
-        );
+        setOrders((prev) => prev.map((o) => (o._id === orderId ? updated : o)));
       }
     } catch (err) {
       console.error("Failed to update status:", err);
@@ -84,7 +81,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-// حفظ ملاحظة الأدمن الخاصة بالطلب
   const handleUpdateAdminNote = async (orderId: string, adminNote: string) => {
     setUpdatingId(orderId);
     try {
@@ -100,9 +96,7 @@ export default function AdminOrdersPage() {
 
       if (res.ok) {
         const updated = await res.json();
-        setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? updated : o))
-        );
+        setOrders((prev) => prev.map((o) => (o._id === orderId ? updated : o)));
       }
     } catch (err) {
       console.error("Failed to update admin note:", err);
@@ -111,7 +105,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // تبديل حالة الدفع (مدفوع / لم يُدفع)
   const handleTogglePayment = async (orderId: string, currentPaid: boolean) => {
     setUpdatingId(orderId);
     try {
@@ -127,9 +120,7 @@ export default function AdminOrdersPage() {
 
       if (res.ok) {
         const updated = await res.json();
-        setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? updated : o))
-        );
+        setOrders((prev) => prev.map((o) => (o._id === orderId ? updated : o)));
       }
     } catch (err) {
       console.error("Failed to toggle payment:", err);
@@ -138,7 +129,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // حساب أعداد التبويبات الأربعة
   const counts = useMemo(() => {
     return {
       all: orders.length,
@@ -148,7 +138,6 @@ export default function AdminOrdersPage() {
     };
   }, [orders]);
 
-  // تصفية الطلبات حسب التبويب المفتوح والبحث
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       const matchesTab =
@@ -166,18 +155,13 @@ export default function AdminOrdersPage() {
       const matchTransfer = (order.paymentReceipt || "").includes(q);
 
       return (
-        matchOrderNum ||
-        matchName ||
-        matchPhone ||
-        matchTable ||
-        matchTransfer
+        matchOrderNum || matchName || matchPhone || matchTable || matchTransfer
       );
     });
   }, [orders, activeFilter, searchQuery]);
 
   return (
     <div className="space-y-6" dir="rtl">
-      {/* القسم العلوي: العنوان يميناً وشريط البحث يساراً */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <OrderStatsHeader />
 
@@ -197,14 +181,12 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* شريط التبويبات الأربعة (الكل - مكتمل - قيد الإنتظار - ملغي) */}
       <OrderFilterTabs
         activeFilter={activeFilter}
         setActiveFilter={setActiveFilter}
         counts={counts}
       />
 
-      {/* عرض البطاقات */}
       {loading ? (
         <div className="bg-white rounded-3xl border border-slate-200/80 py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
           <Loader2 className="w-7 h-7 animate-spin text-[#D55304]" />

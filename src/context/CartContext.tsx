@@ -34,7 +34,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // 1. تحميل البيانات من localStorage عند فتح الموقع لأول مرة فقط
   useEffect(() => {
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
@@ -48,11 +47,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error("Failed to load cart from localStorage:", err);
     } finally {
-      setIsInitialized(true); // تفعيل الحفظ بعد انتهاء التحميل
+      setIsInitialized(true);
     }
   }, []);
 
-  // 2. حفظ التعديلات في localStorage فقط بعد التأكد من انتهاء التحميل الأولي
   useEffect(() => {
     if (!isInitialized) return;
 

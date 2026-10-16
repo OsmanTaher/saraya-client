@@ -1,121 +1,93 @@
+ 
 "use client";
-
-/* eslint-disable @next/next/no-img-element */
 
 import { useCart, getCartItemKey } from "@/src/context/CartContext";
 import { ShoppingCart, Trash2 } from "lucide-react";
 
 interface CartItemListProps {
-  onZoomImage: (image: { src: string; name: string }) => void;
+  onZoomImage: (item: { src: string; name: string }) => void;
 }
 
 export default function CartItemList({ onZoomImage }: CartItemListProps) {
-  const { cart, updateQuantity, clearCart } = useCart();
+  const { cart, removeFromCart } = useCart();
+
+  if (cart.length === 0) {
+    return (
+      <div className="py-7 text-center text-slate-400 space-y-2 border-b border-slate-100">
+        <ShoppingCart className="w-7 h-7 mx-auto text-slate-300 stroke-[1.75]" />
+        <p className="text-xs font-medium">
+          لم تقم باختيار أي وجبة بعد، أضف وجباتك من القائمة.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-3" dir="rtl">
-      <div className="max-h-52 overflow-y-auto divide-y divide-slate-100 text-sm space-y-2 pr-1 custom-scrollbar">
-        {cart.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-5 text-slate-400 space-y-1.5">
-            <ShoppingCart className="w-6 h-6 text-slate-300 stroke-[1.75]" />
-            <p className="text-xs font-medium text-slate-400">
-              لم تقم بإضافة أي وجبة بعد.
-            </p>
-          </div>
-        ) : (
-          cart.map((item) => {
-            const itemKey =
-              item.cartItemId || getCartItemKey(item._id, item.selectedSize);
-            const itemPrice = Number(item.price || 0);
+    <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 pr-1 custom-scrollbar">
+      {cart.map((item) => {
+        const price = Number(item.price || 0);
+        const qty = Number(item.cartQuantity || 0);
+        const itemKey =
+          item.cartItemId || getCartItemKey(item._id, item.selectedSize);
 
-            return (
+        return (
+          <div
+            key={itemKey}
+            className="py-3 flex justify-between items-center gap-3 text-xs sm:text-sm"
+          >
+            <div className="flex items-center gap-2.5 flex-1 min-w-0">
               <div
-                key={itemKey}
-                className="flex justify-between items-center py-2.5 gap-2.5"
+                className="relative w-12 h-12 rounded-xl overflow-hidden bg-orange-50/50 border border-slate-200/80 shrink-0 cursor-pointer group"
+                onClick={() =>
+                  onZoomImage({ src: item.image, name: item.name })
+                }
               >
                 <img
                   src={item.image}
                   alt={item.name}
-                  onClick={() =>
-                    onZoomImage({ src: item.image, name: item.name })
-                  }
-                  className="w-11 h-11 rounded-xl object-cover bg-slate-100 shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity border border-slate-200/60"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
-                      "https://placehold.co/80x80/fff7ed/D55304?text=وجبة";
+                      "https://placehold.co/100x100/fff7ed/D55304?text=?";
                   }}
                 />
-
-                <div className="flex-1 min-w-0 pr-1 text-right">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className="font-bold text-slate-800 text-xs truncate">
-                      {item.name}
-                    </p>
-                    {item.selectedSize && (
-                      <span className="text-[10px] font-bold bg-orange-50 text-[#D55304] border border-[#D55304]/20 px-1.5 py-0.5 rounded-md">
-                        {item.selectedSize}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5 mt-1.5">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateQuantity(
-                          item._id,
-                          item.cartQuantity + 1,
-                          item.selectedSize
-                        )
-                      }
-                      className="w-6 h-6 flex items-center justify-center rounded-md bg-[#D55304] text-white hover:bg-[#b84403] font-bold text-xs transition cursor-pointer"
-                    >
-                      +
-                    </button>
-
-                    <span className="min-w-5 text-center text-xs font-extrabold text-slate-800">
-                      {item.cartQuantity}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateQuantity(
-                          item._id,
-                          item.cartQuantity - 1,
-                          item.selectedSize
-                        )
-                      }
-                      className="w-6 h-6 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-bold text-xs transition cursor-pointer"
-                    >
-                      −
-                    </button>
-
-                    <span className="text-[11px] text-slate-400 mr-1">
-                      × {itemPrice.toFixed(2)} ج.م
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-left font-extrabold text-[#D55304] text-xs shrink-0">
-                  {(itemPrice * item.cartQuantity).toFixed(2)} ج.م
-                </div>
               </div>
-            );
-          })
-        )}
-      </div>
 
-      {cart.length > 0 && (
-        <button
-          type="button"
-          onClick={clearCart}
-          className="flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
-        >
-          <Trash2 className="w-3.5 h-3.5 ml-1" />
-          تفريغ السلة
-        </button>
-      )}
+              <div className="flex-1 min-w-0 text-right">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className="font-bold text-slate-800 truncate">
+                    {item.name}
+                  </p>
+                  {item.selectedSize && (
+                    <span className="inline-block text-[10px] font-extrabold bg-orange-50 text-[#D55304] border border-[#D55304]/25 px-1.5 py-0.5 rounded-md">
+                      {item.selectedSize}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  الكمية:{" "}
+                  <span className="font-extrabold text-[#D55304]">{qty}</span> ×{" "}
+                  {price} ج.م
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-slate-900 whitespace-nowrap">
+                {price * qty} ج.م
+              </span>
+              <button
+                type="button"
+                onClick={() => removeFromCart(item._id, item.selectedSize)}
+                className="text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                title="حذف الوجبة"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

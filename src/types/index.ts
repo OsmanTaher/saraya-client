@@ -19,7 +19,7 @@ export interface CartItem extends Product {
   cartItemId: string;
   cartQuantity: number;
   selectedSize?: string;
-  effectivePrice: number; // السعر الفعلي (حسب الحجم المختار أو السعر الأساسي)
+  effectivePrice: number;
 }
 
 export interface OrderItem {
@@ -35,7 +35,7 @@ export interface Order {
   adminNote: string;
   _id: string;
   orderNumber: number;
-  orderType: 'delivery' | 'dine_in' | 'cashier' | 'pickup';
+  orderType: "delivery" | "dine_in" | "cashier" | "pickup";
   tableNumber?: string;
   customerName?: string;
   phone?: string;
@@ -45,10 +45,10 @@ export interface Order {
   subtotal: number;
   deliveryFee: number;
   totalPrice: number;
-  paymentMethod: 'cash' | 'instapay' | 'vodafone_cash';
+  paymentMethod: "cash" | "instapay" | "vodafone_cash";
   paymentReceipt?: string;
   isPaid: boolean;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: "pending" | "confirmed" | "cancelled";
   createdAt: string;
   updatedAt: string;
 }

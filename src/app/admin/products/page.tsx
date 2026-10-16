@@ -1,60 +1,15 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { toast } from "sonner";
 import { Product } from "@/src/types";
 import { getAdminToken } from "@/src/lib/cookies";
+import { CATEGORY_TABS } from "@/src/constants/categories";
 import ProductsHeader from "@/src/components/admin/products/ProductsHeader";
 import ProductsTable from "@/src/components/admin/products/ProductsTable";
 import ProductFormModal from "@/src/components/admin/products/ProductFormModal";
-import {
-  Search,
-  Flame,
-  Pizza,
-  Utensils,
-  CookingPot,
-  UtensilsCrossed,
-  Sandwich,
-  Fish,
-  Soup,
-  Salad,
-  Croissant,
-  IceCream,
-  CupSoda,
-  Loader2,
-  X,
-} from "lucide-react";
-
-const CATEGORY_TABS = [
-  { id: "all", label: "الكل", icon: null },
-  { id: "المشويات على الفحم", label: "المشويات على الفحم", icon: Flame },
-  { id: "البيتزا", label: "البيتزا", icon: Pizza },
-  { id: "الأكل الإيطالي", label: "الأكل الإيطالي", icon: Utensils },
-  {
-    id: "الطواجن والأطباق الشرقية",
-    label: "الطواجن والأطباق الشرقية",
-    icon: CookingPot,
-  },
-  { id: "الوجبات والصواني", label: "الوجبات والصواني", icon: UtensilsCrossed },
-  { id: "السندوتشات والبرجر", label: "السندوتشات والبرجر", icon: Sandwich },
-  {
-    id: "المأكولات البحرية (سي فود)",
-    label: "المأكولات البحرية (سي فود)",
-    icon: Fish,
-  },
-  { id: "الشوربة", label: "الشوربة", icon: Soup },
-  {
-    id: "السلطات والمقبلات الباردة",
-    label: "السلطات والمقبلات الباردة",
-    icon: Salad,
-  },
-  {
-    id: "المقبلات الساخنة والأطباق الجانبية",
-    label: "المقبلات الساخنة والأطباق الجانبية",
-    icon: Croissant,
-  },
-  { id: "الحلويات", label: "الحلويات", icon: IceCream },
-  { id: "المشروبات", label: "المشروبات", icon: CupSoda },
-];
+import ConfirmModal from "@/src/components/ui/ConfirmModal";
+import { Search, Loader2 } from "lucide-react";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -65,6 +20,11 @@ export default function AdminProductsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -87,9 +47,7 @@ export default function AdminProductsPage() {
     fetchProducts();
   }, [fetchProducts]);
 
-  // إضافة أو تعديل وجبة
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSaveProduct = async (payload: Record<string, any>) => {
+  const handleSaveProduct = async (payload: Record<string, unknown>) => {
     const token = getAdminToken();
     const isEditing = Boolean(editingProduct);
     const url = isEditing
@@ -115,15 +73,16 @@ export default function AdminProductsPage() {
       setProducts((prev) =>
         prev.map((p) => (p._id === editingProduct!._id ? data : p)),
       );
+      toast.success("تم تعديل الوجبة بنجاح");
     } else {
       setProducts((prev) => [data, ...prev]);
+      toast.success("تمت إضافة الوجبة الجديدة للمنيو");
     }
 
     setModalOpen(false);
     setEditingProduct(null);
   };
 
-  // تبديل توفر الوجبة (متوفر للطلب / نفد مؤقتاً)
   const handleToggleAvailability = async (product: Product) => {
     setTogglingId(product._id);
     try {
@@ -152,15 +111,13 @@ export default function AdminProductsPage() {
     }
   };
 
-  // حذف وجبة
-  const handleDeleteProduct = async (productId: string) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذه الوجبة نهائياً من المنيو؟")) {
-      return;
-    }
+  const confirmDeleteProduct = async () => {
+    if (!deletingProductId) return;
+    setIsDeleting(true);
 
     try {
       const token = getAdminToken();
-      const res = await fetch(`${apiUrl}/products/${productId}`, {
+      const res = await fetch(`${apiUrl}/products/${deletingProductId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -168,10 +125,15 @@ export default function AdminProductsPage() {
       });
 
       if (res.ok) {
-        setProducts((prev) => prev.filter((p) => p._id !== productId));
+        setProducts((prev) => prev.filter((p) => p._id !== deletingProductId));
+        toast.success("تم حذف الوجبة نهائياً من المنيو");
+        setDeletingProductId(null);
       }
     } catch (err) {
       console.error("Failed to delete product:", err);
+      toast.error("حدث خطأ أثناء حذف الوجبة");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -196,7 +158,6 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6" dir="rtl">
-      {/* 1. الترويسة وزر إضافة وجبة جديدة */}
       <ProductsHeader
         onAddClick={() => {
           setEditingProduct(null);
@@ -204,9 +165,8 @@ export default function AdminProductsPage() {
         }}
       />
 
-      {/* 2. شريط التبويبات يميناً + شريط البحث يساراً كما في الصورة */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
           {CATEGORY_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeCategory === tab.id;
@@ -228,36 +188,20 @@ export default function AdminProductsPage() {
           })}
         </div>
 
-        {/* حقل البحث عن وجبة */}
         <div className="relative w-full lg:w-72 shrink-0">
-          {/* أيقونة البحث في اليمين */}
           <span className="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
             <Search className="w-4 h-4" />
           </span>
-
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ابحث عن وجبة أو صنف..."
-            className="w-full bg-white border border-slate-200/90 rounded-2xl py-2.5 pr-10 pl-9 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#D55304] transition"
+            className="w-full bg-white border border-slate-200/90 rounded-2xl py-2.5 pr-10 pl-4 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#D55304] transition"
           />
-
-          {/* زر مسح البحث (يظهر فقط عند وجود نص) */}
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 hover:text-slate-600 transition cursor-pointer"
-              title="مسح البحث"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
         </div>
       </div>
 
-      {/* 3. جدول الوجبات */}
       {loading ? (
         <div className="bg-white rounded-3xl border border-slate-200/80 py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
           <Loader2 className="w-7 h-7 animate-spin text-[#D55304]" />
@@ -270,13 +214,12 @@ export default function AdminProductsPage() {
             setEditingProduct(product);
             setModalOpen(true);
           }}
-          onDelete={handleDeleteProduct}
+          onDelete={(productId) => setDeletingProductId(productId)}
           onToggleAvailability={handleToggleAvailability}
           togglingId={togglingId}
         />
       )}
 
-      {/* 4. نافذة إضافة / تعديل الوجبة */}
       <ProductFormModal
         isOpen={modalOpen}
         editingProduct={editingProduct}
@@ -285,6 +228,18 @@ export default function AdminProductsPage() {
           setEditingProduct(null);
         }}
         onSubmit={handleSaveProduct}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(deletingProductId)}
+        title="حذف الوجبة من المنيو"
+        message="هل أنت متأكد من حذف هذه الوجبة نهائياً من قائمة طعام مطعم السرايا؟"
+        confirmText="نعم، احذف الوجبة"
+        cancelText="إلغاء"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDeleteProduct}
+        onCancel={() => setDeletingProductId(null)}
       />
     </div>
   );

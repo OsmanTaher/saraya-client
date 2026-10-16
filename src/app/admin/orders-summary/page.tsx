@@ -81,7 +81,6 @@ export default function AdminOrdersSummaryPage() {
 
   return (
     <div className="space-y-6" dir="rtl">
-      {/* الترويسة */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900">
@@ -101,7 +100,6 @@ export default function AdminOrdersSummaryPage() {
         </button>
       </div>
 
-      {/* 1. البطاقات الإحصائية الرئيسية (بما فيها متوسط الفاتورة) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-3xl border border-slate-200/80 p-5 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
@@ -155,12 +153,12 @@ export default function AdminOrdersSummaryPage() {
             <span className="text-amber-600">
               {summary.pendingCount} انتظار
             </span>{" "}
-            — <span className="text-rose-600">{summary.cancelledCount} ملغي</span>
+            —{" "}
+            <span className="text-rose-600">{summary.cancelledCount} ملغي</span>
           </p>
         </div>
       </div>
 
-      {/* 2. توزيع الطلبات حسب نوع التوصيل / الطلب */}
       <div className="bg-white rounded-3xl border border-slate-200/80 p-6 space-y-4 shadow-2xs">
         <h2 className="text-base font-black text-slate-900">
           توزيع الطلبات حسب نوع الخدمة والتوصيل
@@ -224,7 +222,6 @@ export default function AdminOrdersSummaryPage() {
         </div>
       </div>
 
-      {/* 3. جدول الوجبات الأكثر طلباً */}
       <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-2xs">
         <div className="p-6 border-b border-slate-100 flex items-center gap-2">
           <Flame className="w-5 h-5 text-[#D55304]" />
@@ -245,7 +242,9 @@ export default function AdminOrdersSummaryPage() {
                   <th className="py-3.5 px-6">#</th>
                   <th className="py-3.5 px-6">اسم الوجبة</th>
                   <th className="py-3.5 px-6 text-center">الحجم</th>
-                  <th className="py-3.5 px-6 text-center">إجمالي الكمية المباعة</th>
+                  <th className="py-3.5 px-6 text-center">
+                    إجمالي الكمية المباعة
+                  </th>
                   <th className="py-3.5 px-6 text-left">إجمالي الإيراد</th>
                 </tr>
               </thead>

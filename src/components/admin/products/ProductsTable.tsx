@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+ 
 "use client";
 
 import { Product } from "@/src/types";
@@ -59,7 +59,6 @@ export default function ProductsTable({
                     !isAvailable ? "bg-slate-50/60" : ""
                   }`}
                 >
-                  {/* 1. عمود الوجبة (الصورة + الاسم + الوصف) */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-4">
                       <img
@@ -85,19 +84,16 @@ export default function ProductsTable({
                     </div>
                   </td>
 
-                  {/* 2. عمود الأحجام والأسعار */}
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-center">
                       {hasSizes ? (
                         <div className="grid grid-cols-3 gap-2.5 w-max">
                           {(["صغير", "وسط", "كبير"] as const).map(
                             (sizeName) => {
-                              // البحث عن الحجم الحالي داخل مصفوفة أحجام المنتج
                               const sz = product.sizes?.find(
                                 (s) => s.name?.trim() === sizeName,
                               );
 
-                              // إذا لم يكن الحجم موجوداً، نحجز مكانه بعنصر فارغ بنفس العرض للحفاظ على المحاذاة
                               if (!sz) {
                                 return (
                                   <div key={sizeName} className="w-[88px]" />
@@ -115,7 +111,7 @@ export default function ProductsTable({
                                   <span className="block text-xs sm:text-sm font-black text-slate-900">
                                     {Number(sz.price).toFixed(2)} ج.م
                                   </span>
-                                  {/* إظهار السعر القديم تحت الحجم الصغير إذا وُجد خصم */}
+
                                   {sizeName === "صغير" && product.oldPrice ? (
                                     <span className="block text-[10px] text-slate-400 line-through">
                                       {Number(product.oldPrice).toFixed(2)} ج.م
@@ -144,7 +140,6 @@ export default function ProductsTable({
                     </div>
                   </td>
 
-                  {/* 3. عمود حالة التوفر (متوفر للطلب / نفد مؤقتاً) */}
                   <td className="py-4 px-4 text-center">
                     <div className="inline-flex items-center justify-center gap-2.5">
                       <button
@@ -177,7 +172,6 @@ export default function ProductsTable({
                     </div>
                   </td>
 
-                  {/* 4. عمود الإجراءات (تعديل + حذف) */}
                   <td className="py-4 px-6">
                     <div className="flex items-center justify-end gap-2">
                       <button

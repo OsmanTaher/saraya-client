@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+ 
 "use client";
 
 import React, { useState, useRef } from "react";
@@ -37,23 +37,20 @@ export default function ProductForm({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [name, setName] = useState(initialData?.name || "");
-  const [category, setCategory] = useState(
-    initialData?.category || "سندوتشات"
-  );
+  const [category, setCategory] = useState(initialData?.category || "سندوتشات");
   const [price, setPrice] = useState<string>(
-    initialData?.price !== undefined ? String(initialData.price) : ""
+    initialData?.price !== undefined ? String(initialData.price) : "",
   );
   const [oldPrice, setOldPrice] = useState<string>(
-    initialData?.oldPrice ? String(initialData.oldPrice) : ""
+    initialData?.oldPrice ? String(initialData.oldPrice) : "",
   );
   const [description, setDescription] = useState(
-    initialData?.description || ""
+    initialData?.description || "",
   );
   const [imagePreview, setImagePreview] = useState<string>(
-    initialData?.image || ""
+    initialData?.image || "",
   );
 
-  // إدارة الأحجام الثلاثة (صغير - وسط - كبير)
   const initSizeMap = () => {
     const map: Record<string, { enabled: boolean; price: string }> = {
       صغير: { enabled: false, price: "" },
@@ -74,7 +71,6 @@ export default function ProductForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ضغط وتحويل الصورة المختارة إلى Base64 لرفعها إلى Cloudinary عبر السيرفر
   const handleFileSelect = (file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("يرجى اختيار ملف صورة صالح");
@@ -141,7 +137,7 @@ export default function ProductForm({
     }
 
     const activeSizes = AVAILABLE_SIZES.filter(
-      (sz) => sizesState[sz].enabled && sizesState[sz].price.trim() !== ""
+      (sz) => sizesState[sz].enabled && sizesState[sz].price.trim() !== "",
     ).map((sz) => ({
       name: sz,
       price: Number(sizesState[sz].price),
@@ -151,8 +147,8 @@ export default function ProductForm({
       price.trim() !== ""
         ? Number(price)
         : activeSizes.length > 0
-        ? activeSizes[0].price
-        : NaN;
+          ? activeSizes[0].price
+          : NaN;
 
     if (isNaN(basePrice) || basePrice < 0) {
       setError("يرجى إدخال السعر الحالي للوجبة");
@@ -171,9 +167,7 @@ export default function ProductForm({
         sizes: activeSizes,
       });
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الوجبة"
-      );
+      setError(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الوجبة");
     } finally {
       setLoading(false);
     }
@@ -188,7 +182,6 @@ export default function ProductForm({
         </div>
       )}
 
-      {/* 1. صندوق سحب وإفلات ورفع صورة الوجبة إلى Cloudinary */}
       <div>
         <input
           ref={fileInputRef}
@@ -250,7 +243,6 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* 2. اسم الوجبة + القسم */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-extrabold text-slate-800 mb-1.5">
@@ -284,7 +276,6 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* 3. السعر الحالي + السعر القديم */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-extrabold text-slate-800 mb-1.5">
@@ -330,7 +321,6 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* 4. صندوق أحجام الوجبة (صغير - وسط - كبير) مطابق للصورة */}
       <div className="bg-[#FFF7ED]/70 border border-orange-100 rounded-2xl p-4 space-y-3">
         <label className="block text-xs font-extrabold text-slate-800">
           أحجام الوجبة (اختياري)
@@ -381,7 +371,6 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* 5. وصف الوجبة والمكونات */}
       <div>
         <label className="block text-xs font-extrabold text-slate-800 mb-1.5">
           وصف الوجبة والمكونات{" "}
@@ -402,7 +391,6 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* 6. زر الإرسال */}
       <button
         type="submit"
         disabled={loading}

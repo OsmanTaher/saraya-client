@@ -76,9 +76,7 @@ export default function Header() {
               width={40}
               height={40}
               priority
-              // className="w-full h-full object-contain cursor-pointer"
               className="w-10 h-10 rounded-xl object-contain bg-orange-50 p-0.5"
-
             />
           </div>
 

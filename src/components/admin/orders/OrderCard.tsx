@@ -22,7 +22,7 @@ interface OrderCardProps {
   order: Order;
   onUpdateStatus: (
     orderId: string,
-    newStatus: "pending" | "confirmed" | "cancelled"
+    newStatus: "pending" | "confirmed" | "cancelled",
   ) => Promise<void>;
   onTogglePayment: (orderId: string, currentPaid: boolean) => Promise<void>;
   onUpdateAdminNote: (orderId: string, adminNote: string) => Promise<void>;
@@ -39,7 +39,6 @@ export default function OrderCard({
   const isBusy = updatingId === order._id;
   const adminNote = (order as Order & { adminNote?: string }).adminNote || "";
 
-  // حالات فتح وإغلاق ملاحظة العميل وملاحظة الأدمن
   const [showCustomerNote, setShowCustomerNote] = useState(false);
   const [showAdminNote, setShowAdminNote] = useState(false);
   const [adminNoteText, setAdminNoteText] = useState(adminNote);
@@ -48,7 +47,6 @@ export default function OrderCard({
   const hasCustomerNote = Boolean(order.notes && order.notes.trim() !== "");
   const hasSavedAdminNote = Boolean(adminNote.trim() !== "");
 
-  // تنسيق التاريخ والوقت
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleString("ar-EG", {
         year: "numeric",
@@ -59,7 +57,6 @@ export default function OrderCard({
       })
     : "";
 
-  // شارة حالة الطلب في أعلى اليسار (مكتمل / قيد الإنتظار / ملغي)
   const renderStatusBadge = () => {
     if (order.status === "confirmed") {
       return (
@@ -82,7 +79,6 @@ export default function OrderCard({
     );
   };
 
-  // تحديد أيقونة ونص مكان الطلب
   const renderOrderLocation = () => {
     if (order.orderType === "dine_in") {
       return (
@@ -141,9 +137,7 @@ export default function OrderCard({
       className={`h-full bg-white rounded-3xl border transition-all p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-xs border-white`}
       dir="rtl"
     >
-      {/* الجزء العلوي من البطاقة */}
       <div className="space-y-3">
-        {/* 1. الصف الأول: رقم الطلب واسم العميل يميناً + شارة الحالة يساراً */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="bg-orange-50 text-[#D55304] border border-[#D55304]/20 font-black text-xs sm:text-sm px-3 py-1 rounded-xl font-mono shrink-0">
@@ -157,7 +151,6 @@ export default function OrderCard({
           <div className="shrink-0">{renderStatusBadge()}</div>
         </div>
 
-        {/* 2. بيانات المكان والتاريخ والهاتف */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500">
           {renderOrderLocation()}
 
@@ -179,7 +172,6 @@ export default function OrderCard({
           )}
         </div>
 
-        {/* 3. أزرار ملاحظة العميل وملاحظة الأدمن بنظام Toggle */}
         <div className="pt-2 border-t border-slate-100 flex items-center justify-start gap-2 flex-wrap">
           {hasCustomerNote && (
             <button
@@ -220,7 +212,6 @@ export default function OrderCard({
           </button>
         </div>
 
-        {/* نافذة عرض ملاحظة العميل (تظهر وتختفي بـ Toggle) */}
         {showCustomerNote && hasCustomerNote && (
           <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3.5 text-right space-y-1 animate-in fade-in duration-150">
             <p className="text-xs font-extrabold text-indigo-700">
@@ -232,7 +223,6 @@ export default function OrderCard({
           </div>
         )}
 
-        {/* نافذة ملاحظة الأدمن (تظهر وتختفي بـ Toggle فقط) */}
         {showAdminNote && (
           <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-right space-y-3 animate-in fade-in duration-150">
             <p className="text-xs font-extrabold text-amber-900">
@@ -269,7 +259,6 @@ export default function OrderCard({
           </div>
         )}
 
-        {/* 4. جدول الوجبات المطلوبة (بارتفاع ثابت لـ 3 أصناف مع Scroll رأسي للباقي) */}
         <div className="bg-slate-50/70 rounded-2xl border border-slate-100 overflow-hidden">
           <div className="grid grid-cols-12 bg-slate-100/80 px-4 py-2 text-[11px] font-extrabold text-slate-500">
             <span className="col-span-6 text-right">المنتج</span>
@@ -308,9 +297,7 @@ export default function OrderCard({
         </div>
       </div>
 
-      {/* الجزء السفلي الثابت من البطاقة */}
       <div className="space-y-4 pt-2 border-t border-slate-100">
-        {/* شريط الإجمالي وطريقة الدفع وحالة الدفع */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="block text-[11px] text-slate-400 font-bold">
@@ -364,7 +351,6 @@ export default function OrderCard({
           </button>
         </div>
 
-        {/* أزرار التأكيد (يرسل للتلجرام) والإلغاء */}
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
