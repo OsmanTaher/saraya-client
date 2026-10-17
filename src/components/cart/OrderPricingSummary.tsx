@@ -29,7 +29,7 @@ export default function OrderPricingSummary({
           <span>رسوم التوصيل:</span>
           {isPickup ? (
             <span className="font-bold text-emerald-600">
-              مجاناً (استلام من الفرع)
+              مجاناً
             </span>
           ) : (
             <span className="font-bold text-slate-800">{deliveryFee} ج.م</span>

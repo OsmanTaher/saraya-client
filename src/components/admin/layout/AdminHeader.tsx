@@ -34,7 +34,7 @@ export default function AdminHeader({
             <img
               src="/logo.png"
               alt="مطعم السرايا"
-              className="w-10 h-10 rounded-xl bg-white p-1 object-contain shadow-xs"
+              className="w-10 h-10 rounded-xl bg-white p-0.5 object-contain shadow-xs"
             />
             <div className="leading-tight text-right">
               <h1 className="font-black text-base sm:text-lg">مطعم السرايا</h1>

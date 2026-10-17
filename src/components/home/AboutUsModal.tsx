@@ -55,11 +55,11 @@ export default function AboutUsModal({ isOpen, onClose }: AboutUsModalProps) {
             </h3>
             <ul className="space-y-1.5 text-xs md:text-sm text-amber-900">
               <li>
-                • <strong>مواعيد العمل:</strong> يومياً من الساعة 12:00 ظهراً
-                وحتى 1:00 صباحاً.
+                • <strong>مواعيد العمل:</strong> يومياً من الساعة 6:00 صباحا
+                وحتى 2:00 ظهراً.
               </li>
               <li>
-                • <strong>العنوان:</strong> الشارع الرئيسي - بجوار موقف السرايا.
+                • <strong>العنوان:</strong> الأقصر/العوامية (ميدان الصنايع) بجوار القرعاني .
               </li>
               <li>
                 • <strong>خدمة التوصيل:</strong> تغطية سريعة لجميع المناطق

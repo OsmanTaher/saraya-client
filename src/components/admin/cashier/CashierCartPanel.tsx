@@ -44,7 +44,7 @@ export default function CashierCartPanel({
   const totalPrice = Number(subtotalPrice || 0);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6 space-y-5">
+    <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 sm:p-6 sticky top-24 space-y-5 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div className="flex items-center gap-2 text-slate-900">
           <Receipt className="w-5 h-5 text-[#D55304]" />
